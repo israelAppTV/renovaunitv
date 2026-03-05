@@ -1,0 +1,851 @@
+temos que separar por sprints e das sprints elaborar prompts para o cursor criar esse projeto:
+
+Loja Virtual Completa (Frontend em Next.js/Tailwind):
+- Catálogo de produtos com filtragem por categorias.
+- Sistema de carrinho de compras.
+- Páginas de login, cadastro de cliente e recuperação de senha.
+- Área do Cliente ("Minha Conta") para visualização de pedidos e códigos comprados.
+
+Painel de Administrador Sob Medida:
+- Sistema de login seguro apenas para o administrador.
+- Interface para cadastrar, editar e excluir produtos e categorias.
+- Sistema para gerenciar os pedidos (ver o que foi pago, pendente, etc.).
+- Ferramenta para importar e gerenciar o estoque de códigos digitais.
+
+Integração de Pagamento via API (Stripe ou Mercado Pago):
+- Programação completa da conexão com o gateway de pagamento (não é um plugin, é uma construção de API).
+- Implementação do checkout para aceitar PIX e Cartão de Crédito.
+
+Sistema de Automação de Entrega (Webhooks + Supabase):
+- Esta é a funcionalidade mais crítica: a criação de um "ouvinte" automático.
+- Quando o gateway (Stripe/MP) confirmar o pagamento, o sistema irá automaticamente: a. Buscar um código de recarga disponível no estoque (Supabase). b. Enviar este código por e-mail para o cliente (via API de e-mail). c. Marcar o pedido como "concluído" e salvar o código na área do cliente.
+
+Perfeito. Vamos estruturar isso como roadmap técnico profissional, dividido por sprints, e para cada sprint eu já vou te entregar prompts prontos para usar no Cursor (bem objetivos, no estilo que LLM de código entende melhor).
+
+Vou organizar em uma sequência lógica de entrega incremental.
+
+📦 VISÃO GERAL DAS SPRINTS
+🟢 Sprint 1 — Setup e Arquitetura Base
+🟢 Sprint 2 — Catálogo + Produtos + Carrinho
+🟢 Sprint 3 — Autenticação + Área do Cliente
+🟢 Sprint 4 — Painel Admin
+🟢 Sprint 5 — Integração de Pagamento (Stripe ou Mercado Pago)
+🟢 Sprint 6 — Webhooks + Automação de Entrega
+🟢 Sprint 7 — Hardening, Segurança e Deploy
+🟢 SPRINT 1 — Setup e Arquitetura Base
+🎯 Objetivo
+
+Criar estrutura sólida do projeto com:
+
+Next.js (App Router)
+
+Tailwind
+
+Supabase
+
+Arquitetura organizada
+
+Tipagem forte
+
+Estrutura de pastas limpa
+
+✅ Prompt para o Cursor — Setup Inicial
+Crie um projeto Next.js 14 usando App Router com TypeScript e TailwindCSS.
+
+Configure a seguinte arquitetura:
+
+/src
+  /app
+  /components
+  /lib
+  /services
+  /hooks
+  /types
+  /utils
+
+Instale e configure:
+- Supabase client
+- Zod
+- React Hook Form
+- Axios
+
+Crie:
+- Arquivo de configuração do Supabase em /lib/supabase.ts
+- Sistema de variáveis de ambiente tipado
+- Layout base com Header e Footer
+- Tema global usando Tailwind
+
+Use boas práticas de arquitetura escalável.
+🟢 SPRINT 2 — Catálogo + Carrinho
+🎯 Objetivo
+
+Listagem de produtos
+
+Filtro por categoria
+
+Página de produto
+
+Sistema de carrinho persistente
+
+✅ Prompt — Estrutura do Banco (Supabase)
+Crie o schema SQL para Supabase com as seguintes tabelas:
+
+products:
+- id (uuid)
+- name
+- description
+- price
+- category_id
+- is_active
+- created_at
+
+categories:
+- id (uuid)
+- name
+- created_at
+
+orders:
+- id (uuid)
+- user_id
+- status (pending, paid, delivered)
+- total_amount
+- created_at
+
+order_items:
+- id
+- order_id
+- product_id
+- price
+
+digital_codes:
+- id
+- product_id
+- code
+- is_used
+- used_at
+✅ Prompt — Catálogo
+Crie página de catálogo em /app/page.tsx que:
+
+- Busque produtos ativos do Supabase
+- Permita filtrar por categoria
+- Mostre cards responsivos com:
+  - Nome
+  - Preço
+  - Botão "Comprar"
+
+Use Server Components para fetch.
+Use loading states.
+Use tipagem forte.
+✅ Prompt — Carrinho
+Implemente sistema de carrinho usando Context API.
+
+Requisitos:
+- Adicionar produto
+- Remover produto
+- Atualizar quantidade
+- Persistir no localStorage
+- Calcular total automaticamente
+
+Criar:
+- CartContext
+- Hook useCart()
+- Página /cart
+🟢 SPRINT 3 — Autenticação + Área do Cliente
+🎯 Objetivo
+
+Login
+
+Cadastro
+
+Recuperação de senha
+
+Proteção de rotas
+
+Área "Minha Conta"
+
+✅ Prompt — Auth com Supabase
+Implemente autenticação usando Supabase Auth:
+
+- Cadastro com email e senha
+- Login
+- Logout
+- Recuperação de senha
+
+Crie:
+- Hook useAuth()
+- Context AuthProvider
+- Middleware para proteger rotas privadas
+- Página /minha-conta protegida
+✅ Prompt — Área do Cliente
+Crie página "Minha Conta" que:
+
+- Liste pedidos do usuário logado
+- Mostre status do pedido
+- Mostre códigos digitais comprados (se pedido entregue)
+- Permita visualizar detalhes do pedido
+
+Use Server Components quando possível.
+🟢 SPRINT 4 — Painel Admin
+🎯 Objetivo
+
+Login admin separado
+
+CRUD de produtos
+
+CRUD de categorias
+
+Gestão de pedidos
+
+Upload em massa de códigos
+
+✅ Prompt — Proteção Admin
+Implemente sistema de roles:
+
+- Adicione campo role (admin | customer) na tabela user_metadata
+- Middleware que bloqueie acesso ao /admin se não for admin
+✅ Prompt — CRUD Produtos
+Crie painel em /admin/products com:
+
+- Listagem
+- Criar produto
+- Editar produto
+- Excluir produto
+- Upload de imagem
+
+Use React Hook Form + Zod.
+Validação forte.
+✅ Prompt — Importação de Códigos Digitais
+Crie ferramenta admin para importar códigos digitais via CSV.
+
+Requisitos:
+- Upload CSV
+- Validar estrutura
+- Inserir códigos no Supabase
+- Associar a um produto
+- Evitar códigos duplicados
+🟢 SPRINT 5 — Integração de Pagamento
+
+Você vai escolher:
+
+💳 Stripe
+ou
+
+🇧🇷 Mercado Pago
+
+(Se for Brasil, Mercado Pago é melhor por causa do PIX)
+
+✅ Prompt — Criação da API de Checkout
+Crie rota /api/checkout que:
+
+- Receba produtos do carrinho
+- Crie um pedido com status "pending"
+- Gere preferência de pagamento via Mercado Pago
+- Retorne link de checkout
+
+Use SDK oficial.
+Valide valores no backend.
+Nunca confie no frontend.
+🟢 SPRINT 6 — WEBHOOK + AUTOMAÇÃO (Parte Crítica)
+
+Essa é a parte mais importante do projeto.
+
+✅ Prompt — Webhook Listener
+Crie rota /api/webhook/mercadopago que:
+
+- Valide assinatura do webhook
+- Identifique pagamento aprovado
+- Atualize pedido para "paid"
+- Execute função de entrega automática
+✅ Prompt — Função de Entrega Automática
+Crie função deliverDigitalProduct(orderId):
+
+1. Buscar pedido
+2. Buscar códigos disponíveis no Supabase
+3. Selecionar código não utilizado
+4. Marcar código como usado
+5. Atualizar pedido para delivered
+6. Salvar código no order_items
+7. Enviar email ao cliente com o código
+
+Garantir:
+- Transação segura
+- Não entregar código duplicado
+- Idempotência (webhook pode chamar 2x)
+🟢 SPRINT 7 — Hardening e Segurança
+✅ Prompt — Segurança
+Implemente:
+
+- Rate limit nas APIs
+- Validação de webhook
+- Sanitização de inputs
+- Logs estruturados
+- Tratamento global de erros
+- Proteção contra double delivery
+- Política RLS no Supabase
+📈 Arquitetura Final Esperada
+
+Frontend:
+
+Next.js App Router
+
+Server + Client Components
+
+Context API
+
+Backend:
+
+API Routes
+
+Supabase
+
+Webhooks
+
+Gateway API
+
+Infra:
+
+Vercel
+
+Supabase
+
+Mercado Pago ou Stripe
+
+Resend ou SendGrid
+
+🔥 Próximo Nível (Futuro)
+
+Sistema de afiliados
+
+Cupons de desconto
+
+Painel de métricas
+
+Dashboard financeiro
+
+Fila com Redis para entrega
+
+Sistema antifraude
+
+Se você quiser, posso agora:
+
+🔵 Criar versão ultra profissional estilo SaaS enterprise
+
+🔵 Criar versão MVP simplificada
+
+🔵 Criar diagrama de arquitetura
+
+🔵 Escolher Stripe ou Mercado Pago e aprofundar 100%
+
+🔵 Modelar banco de dados otimizado para alta escala
+
+Qual direção você quer seguir agora?
+
+✅ Prompt — Importação de Códigos Digitais
+
+vamos alterar essa parte, sera upload xlsx nao CSV
+
+e podemos usar o mercado pago mesmo como pagamento, para o pix 
+
+Perfeito. Vamos ajustar duas partes do projeto:
+
+🔁 Importação agora será XLSX (Excel)
+
+💳 Gateway oficial será Mercado Pago com foco em PIX + Cartão
+
+Vou te entregar os prompts já corrigidos e mais robustos para o Cursor.
+
+🟢 ALTERAÇÃO — Importação de Códigos via XLSX
+🎯 Requisitos novos
+
+Upload de arquivo .xlsx
+
+Validação da estrutura da planilha
+
+Processamento server-side
+
+Evitar códigos duplicados
+
+Inserção em lote otimizada
+
+Relatório de sucesso/erros
+
+✅ Prompt Atualizado — Upload XLSX
+Crie ferramenta admin para importar códigos digitais via upload de arquivo XLSX.
+
+Requisitos:
+
+1. Interface:
+- Página /admin/digital-codes
+- Campo de upload para arquivos .xlsx
+- Seleção de produto ao qual os códigos pertencem
+- Botão "Importar"
+
+2. Backend:
+- Criar rota POST /api/admin/import-codes
+- Aceitar apenas arquivos .xlsx
+- Usar biblioteca "xlsx" ou "exceljs" para leitura
+- Validar estrutura da planilha
+
+Estrutura esperada da planilha:
+Coluna A: code
+
+3. Regras:
+- Remover espaços extras
+- Ignorar linhas vazias
+- Evitar inserir códigos duplicados
+- Validar se código já existe no banco
+- Inserção em batch (bulk insert)
+
+4. Retorno:
+- Quantidade importada
+- Quantidade ignorada (duplicadas)
+- Lista de erros
+
+5. Segurança:
+- Apenas admin pode acessar
+- Validar tipo MIME do arquivo
+- Limitar tamanho do upload
+- Sanitizar dados
+
+Use:
+- Zod para validação
+- Supabase para inserção
+- Tipagem forte
+- Tratamento de erros robusto
+🔒 Extra (Recomendado)
+
+Peça também isso no Cursor depois:
+
+Implemente processamento transacional na importação de códigos:
+
+- Se houver erro crítico, rollback
+- Log de importação (criar tabela import_logs)
+- Registrar:
+  - admin_id
+  - product_id
+  - quantidade importada
+  - data
+🟢 ALTERAÇÃO — Pagamento via Mercado Pago (PIX + Cartão)
+
+Vamos estruturar corretamente.
+
+Arquitetura ideal:
+
+Frontend → API Route → Mercado Pago → Webhook → Supabase → Entrega automática
+
+✅ Prompt — Configuração Mercado Pago
+Instale e configure SDK oficial do Mercado Pago.
+
+Crie arquivo /lib/mercadopago.ts com:
+
+- Configuração usando ACCESS_TOKEN via variável de ambiente
+- Função createPixPayment(order)
+- Função createCardPayment(order)
+
+Nunca exponha token no frontend.
+✅ Prompt — Criar Checkout PIX
+Crie rota POST /api/checkout/pix
+
+Fluxo:
+
+1. Receber carrinho
+2. Validar produtos no backend
+3. Criar pedido no Supabase com status "pending"
+4. Criar pagamento PIX no Mercado Pago
+5. Retornar:
+   - QR Code
+   - QR Code base64
+   - payment_id
+   - expiration_date
+
+Requisitos:
+- Usar API de Payment (não preference)
+- Método de pagamento: pix
+- Idempotência
+- Validar valores no backend
+✅ Prompt — Checkout Cartão
+Crie rota POST /api/checkout/card
+
+Fluxo:
+
+1. Receber dados do cartão tokenizados
+2. Criar pedido no banco
+3. Criar pagamento via Mercado Pago
+4. Retornar status do pagamento
+
+Regras:
+- Nunca manipular dados sensíveis diretamente
+- Usar tokenização oficial
+- Validar valor no backend
+🟢 WEBHOOK (CRÍTICO)
+✅ Prompt — Webhook Mercado Pago
+Crie rota POST /api/webhook/mercadopago
+
+Fluxo:
+
+1. Validar assinatura do webhook
+2. Buscar pagamento pelo ID
+3. Confirmar se status = approved
+4. Buscar pedido relacionado
+5. Se pedido já estiver delivered, ignorar (idempotência)
+6. Atualizar pedido para "paid"
+7. Chamar função deliverDigitalProduct()
+
+Garantir:
+- Log de eventos
+- Proteção contra múltiplas execuções
+- Segurança de validação
+🟢 Função de Entrega Automática (Versão Blindada)
+Implemente deliverDigitalProduct(orderId) com:
+
+- Transação segura
+- Lock otimista para evitar pegar mesmo código
+- Buscar código disponível:
+    SELECT ... FOR UPDATE
+- Marcar código como usado
+- Atualizar pedido para delivered
+- Salvar código no order_items
+- Enviar email via Resend
+
+Garantir:
+- Idempotência
+- Se webhook disparar 2x não duplicar entrega
+- Se falhar envio de email, não perder código
+🔥 Arquitetura Recomendada Agora
+
+Next.js 14
+
+Supabase
+
+Mercado Pago (PIX + Cartão)
+
+Resend (email)
+
+XLSX upload via exceljs
+
+Webhook blindado
+
+Entrega automatizada
+
+🚀 Próximo Nível (Se quiser deixar profissional de verdade)
+
+Podemos implementar:
+
+Sistema de reserva de código por 10 minutos
+
+Expiração automática de pedido pendente
+
+Fila com retry automático
+
+Auditoria de entregas
+
+Dashboard financeiro no admin
+
+Anti-fraude básico
+
+Logs estruturados
+
+Se quiser agora eu posso:
+
+🔥 Montar a estrutura ideal do banco já otimizada
+
+🔥 Criar versão enterprise com fila e retry
+
+🔥 Criar blueprint completo estilo SaaS vendável
+
+🔥 Criar fluxo técnico detalhado do PIX do Mercado Pago
+
+Qual nível você quer que a gente leve isso?
+
+como seria o Anti-fraude básico, se eu uso o mercado pago para pagamentos eles cuidam disso nao?
+
+Excelente pergunta.
+
+Resposta curta:
+👉 Sim, o Mercado Pago já possui sistema antifraude próprio, principalmente para cartão de crédito.
+Mas isso não elimina totalmente seu risco — especialmente vendendo códigos digitais (entrega automática).
+
+E no seu caso (produto digital + entrega instantânea), o risco é maior.
+
+Vou te explicar tecnicamente 👇
+
+🧠 O que o Mercado Pago já faz
+
+Para cartão de crédito, eles:
+
+Analisam risco automaticamente
+
+Usam score antifraude
+
+Avaliam comportamento suspeito
+
+Podem:
+
+Aprovar
+
+Recusar
+
+Colocar em análise manual
+
+Para PIX:
+
+O risco é muito menor
+
+Não existe chargeback tradicional
+
+Mas pode existir:
+
+Conta fraudada
+
+PIX de origem ilícita
+
+Disputa futura judicial
+
+⚠️ Onde ainda existe risco para você
+
+Mesmo usando Mercado Pago, você ainda pode ter:
+
+1️⃣ Chargeback em cartão
+
+Cliente compra → recebe código → usa código → contesta a compra.
+
+Se o banco decidir contra você:
+
+Você perde o valor
+
+O cliente já usou o código
+
+Prejuízo total
+
+2️⃣ Bot comprando em massa
+
+Alguém testa cartões roubados.
+Se algum passar:
+
+Você entrega código automaticamente
+
+Perde estoque
+
+3️⃣ Compras repetidas suspeitas
+
+Mesmo usuário:
+
+Compra 10 vezes seguidas
+
+IP suspeito
+
+Email descartável
+
+🔐 O que é “Anti-fraude Básico” então?
+
+É uma camada extra antes de entregar o código, mesmo com pagamento aprovado.
+
+Não é competir com o Mercado Pago.
+É reduzir risco específico de produto digital.
+
+🛡️ Anti-Fraude Básico (Recomendado para você)
+1️⃣ Aguardar alguns segundos antes de entregar
+
+Exemplo:
+
+Se cartão → esperar 30–60 segundos
+
+Se PIX → pode entregar imediato
+
+Isso evita testes de cartão muito rápidos.
+
+2️⃣ Limitar compras por usuário
+
+Exemplo:
+
+Máximo 3 pedidos por hora
+
+Máximo X valor por dia
+
+3️⃣ Bloquear emails temporários
+
+Bloquear domínios como:
+
+mailinator
+
+guerrillamail
+
+yopmail
+
+4️⃣ Detectar múltiplas compras do mesmo IP
+
+Criar regra simples:
+
+Se:
+
+Mesmo IP
+
+Mais de X tentativas
+→ Bloquear temporariamente
+
+5️⃣ Bloquear múltiplas recusas de cartão
+
+Se um IP:
+
+Tentou 5 cartões diferentes
+→ Bloquear 1 hora
+
+6️⃣ Entrega condicional por score simples
+
+Criar função:
+
+riskScore = 0
+
+if valor > 500 → +2
+if primeira compra → +1
+if email suspeito → +2
+if muitas tentativas → +3
+
+if riskScore >= 4:
+    marcar pedido como "review"
+    não entregar automaticamente
+
+Simples. E já reduz 80% de dor de cabeça.
+
+📊 Mercado Pago vs Seu Anti-fraude
+Camada	Quem protege
+Cartão roubado	Mercado Pago
+Chargeback	Mercado Pago (mas você paga se perder)
+Compra automatizada	Você
+Bot testando cartão	Você
+Entrega instantânea indevida	Você
+Abuso de sistema	Você
+🎯 No seu modelo (códigos digitais)
+
+Eu recomendo:
+
+PIX → entrega automática
+
+Cartão → entrega automática com delay + limite por usuário
+
+Log de IP
+
+Bloqueio básico por comportamento
+
+Nada ultra complexo.
+
+🚀 Se quiser deixar profissional mesmo
+
+Podemos:
+
+Criar fila de entrega (ex: 2 min delay cartão)
+
+Criar status:
+
+pending
+
+paid
+
+review
+
+delivered
+
+Criar painel admin de pedidos suspeitos
+
+Criar sistema de bloqueio automático
+
+🔥 Resposta direta pra sua dúvida:
+
+Sim, o Mercado Pago cuida do antifraude de pagamento.
+Mas não protege seu estoque digital nem sua automação de entrega.
+
+E como você está vendendo código digital com entrega instantânea, vale muito a pena ter uma camada simples de proteção.
+
+Se você quiser, posso agora:
+
+🔵 Criar o design técnico do Anti-Fraude Básico
+
+🔵 Criar prompt pronto para o Cursor implementar isso
+
+🔵 Criar versão intermediária (nível SaaS)
+
+🔵 Simular cenários reais de fraude pra sua loja
+
+Qual nível de blindagem você quer aplicar?
+
+veja se nosso projeto esta alinhado com esse: https://nitrosite.com.br
+
+o site que estou te passando é o resultado que esperamos do nosso
+
+Sim — consegui abrir o conteúdo principal do site nitrosite.com.br, que parece oferecer venda de recargas / códigos com entrega imediata via PIX e cartão, com UX bastante parecida com o que você espera do seu projeto.
+
+📌 O que o site atual faz (Nitrosite)
+
+Pelo que o site mostra:
+
+✅ Vende planos / recargas digitais (códigos)
+✅ Pagamento via PIX e Cartão
+✅ Entrega imediata de código após pagamento
+✅ Informações de planos, FAQ, tutoriais, suporte
+✅ Processo de compra simples (seleciona plano → paga → recebe código)
+
+📌 Ele não mostra internamente um painel de administração, sistema de login de cliente, nem integração paga robusta.
+
+📊 Comparando com o que você está planejando construir
+✅ Funcionalidades que batem com o seu projeto
+Funcionalidade	Seu plano	Nitrosite
+Venda de produtos digitais	✔️	✔️ (recargas)
+Pagamento via PIX	✔️	✔️
+Pagamento via Cartão	✔️	✔️
+Entrega automática de códigos	✔️	✔️
+⛔ Funcionalidades que o nitrosite não apresenta claramente
+Funcionalidade	Seu plano	Nitrosite
+Painel administrativo personalizado	✔️	❓
+CRUD de produtos e categorias	✔️	❓
+Área do cliente com histórico de pedidos	✔️	❓
+Importação de códigos via XLSX	✔️	❌
+Gestão de estoque de códigos	✔️	❌
+Antifraude básico	✔️	❌
+🛠️ O nitrosite é um bom benchmark para o front de sua loja?
+
+Sim — especialmente no layout e fluxo de compra cliente → pagamento → entrega automática.
+Mas o seu projeto será muito mais completo, com:
+
+✔ Área do cliente
+✔ Painel admin completo
+✔ Integração robusta com gateway via API
+✔ Importação de códigos
+✔ Automação de entrega segura
+✔ Anti-fraude básico
+✔ Logs, relatórios e métricas
+
+Em outras palavras:
+👉 o nitrosite é um alvo funcional real para você, mas seu projeto vai além dele em robustez e gerenciamento completo.
+
+🧠 Recomendação de alinhamento
+
+Se sua visão é que o produto final seja igual ou melhor que o nitrosite, do ponto de vista do usuário final, então seu escopo está sim compatível e até mais avançado, porque inclui:
+
+✨ Backend sólido
+✨ Admin + Cliente separados
+✨ Sistema de importação
+✨ Processamento seguro de pagamentos
+✨ Entrega automática blindada
+
+Ou seja, você não está exagerando — seu projeto é muito mais completo. Isso te dá vantagem competitiva.
+
+❓ Observação sobre confiança do site nitrosite.com.br
+
+Segundo registros públicos externos, o domínio nitrosite.com.br foi registrado recentemente, e sites assim precisam ser analisados com cautela antes de serem usados como referência ou como base de credibilidade de modelo de negócio.
+
+📌 Conclusão
+
+Seu projeto:
+
+🔹 Tem todos os elementos essenciais observados no nitrosite
+🔹 Vai além, com funcionalidades completas e profissionais
+🔹 Está alinhado com expectativas reais de um site de venda de códigos digitais
+🔹 Pode superar esse benchmark em qualidade e segurança
+
+Se quiser, posso:
+
+🔵 Analisar ponto a ponto visual/layout do nitrosite e gerar sugestões práticas para seu design
+🔵 Criar user flows (como telas e sequências de interação)
+🔵 Escrever prompts ainda mais detalhados para cada parte do sistema
+
+Qual desses você quer primeiro?

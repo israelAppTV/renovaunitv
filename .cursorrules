@@ -1,0 +1,184 @@
+# Cursor Project Rules
+
+Always analyze this file before generating code.
+
+This project is a digital code marketplace built with:
+
+- Next.js
+- Supabase
+- TypeScript
+- Tailwind
+
+The system sells digital codes that must NEVER be delivered twice.
+
+---
+
+# Core Architecture Rules
+
+Follow a modular architecture.
+
+Folders must be organized as:
+
+/api
+/lib
+/services
+/types
+/database
+/components
+/hooks
+
+Business logic MUST NOT exist inside UI components.
+
+Business logic must live in /services.
+
+Database access must be centralized in /lib/supabase.
+
+---
+
+# Digital Code Security Rules
+
+Digital codes are sensitive assets.
+
+The system MUST guarantee:
+
+- A code is delivered only once
+- A code cannot be accessed without purchase
+- Codes cannot be guessed through API endpoints
+
+Codes must never be exposed in:
+
+- public APIs
+- client-side responses
+- logs
+
+Codes must only be returned to authenticated users who own the order.
+
+---
+
+# Stock Integrity Rules
+
+When assigning a code to an order:
+
+- Use atomic database operations
+- Use transactions
+- Prevent race conditions
+
+Never use logic like:
+
+SELECT code FROM codes WHERE used = false LIMIT 1
+
+Without locking or transactions.
+
+Preferred approach:
+
+- Use UPDATE ... RETURNING
+- Or SELECT FOR UPDATE
+
+---
+
+# Order Processing Rules
+
+Orders must follow this lifecycle:
+
+PENDING
+→ PAID
+→ CODE_ASSIGNED
+→ COMPLETED
+
+Orders must never skip states.
+
+Webhook events must be idempotent.
+
+---
+
+# Webhook Security Rules
+
+All payment webhooks must:
+
+- verify signature
+- be idempotent
+- check order status before processing
+
+Never trust webhook payloads blindly.
+
+Always verify order data in the database.
+
+---
+
+# Supabase Security
+
+All tables must use RLS (Row Level Security).
+
+Rules:
+
+Users can only read their own orders.
+
+Admins can access all data.
+
+Codes table must NEVER be accessible to normal users.
+
+---
+
+# Admin Panel Rules
+
+Admin routes must require:
+
+- admin role
+- authentication
+
+Never rely only on frontend protection.
+
+Always validate roles server-side.
+
+---
+
+# API Design
+
+All API routes must:
+
+- validate inputs
+- handle errors properly
+- never expose sensitive data
+
+Use schema validation.
+
+---
+
+# Code Quality Rules
+
+Use:
+
+- TypeScript strict mode
+- clear typing
+- small reusable functions
+
+Avoid:
+
+- large files
+- duplicated logic
+- hidden side effects
+
+---
+
+# Performance Rules
+
+Avoid unnecessary database queries.
+
+Batch operations when possible.
+
+Prefer server actions or API routes for mutations.
+
+---
+
+# Development Behavior
+
+Before implementing any large feature:
+
+1. Analyze the architecture
+2. Propose a plan
+3. Wait for confirmation
+4. Then generate code
+
+Never implement large systems in one step.
+
+Always break work into small tasks.
