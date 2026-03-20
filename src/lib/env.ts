@@ -11,8 +11,9 @@ const parsed = envSchema.safeParse({
 });
 
 if (!parsed.success) {
-  const message = "Variáveis de ambiente inválidas: " + parsed.error.flatten().fieldErrors;
-  throw new Error(message);
+  const fieldErrors = parsed.error.flatten().fieldErrors;
+  const detail = JSON.stringify(fieldErrors);
+  throw new Error(`Variáveis de ambiente inválidas: ${detail}`);
 }
 
 export const env = parsed.data;
