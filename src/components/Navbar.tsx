@@ -10,7 +10,6 @@ const navLinks = [
   { href: "/#planos", label: "Comprar Recarga" },
   { href: "/#planos", label: "Tutoriais" },
   { href: "/#faq", label: "Perguntas Frequentes" },
-  { href: "/#planos", label: "Suporte" },
 ];
 
 function LogoIcon() {

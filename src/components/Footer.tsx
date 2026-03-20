@@ -58,7 +58,6 @@ export function Footer({ className }: { className?: string }) {
                   href="/#planos"
                   className="text-sm text-text/80 transition hover:text-primary"
                 >
-                  Blog
                 </Link>
               </li>
             </ul>

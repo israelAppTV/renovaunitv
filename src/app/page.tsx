@@ -2,6 +2,7 @@ import { CtaCardSection } from "@/components/CtaCardSection";
 import { FaqSection } from "@/components/FaqSection";
 import { Hero } from "@/components/Hero";
 import { HowToSection } from "@/components/HowToSection";
+import { InstallTutorialsSection } from "@/components/InstallTutorialsSection";
 import { PlansSection } from "@/components/PlansSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { TipsSectionWithModal } from "@/components/TipsSectionWithModal";
@@ -84,6 +85,92 @@ export default function HomePage() {
             ctaHref: "/#planos",
             detailsLabel: "Ver detalhes do Plano Anual",
             detailsHref: "/#planos",
+          },
+        ]}
+      />
+      <InstallTutorialsSection
+        title="UniTV Download e Instalação — Tutoriais em Vídeo"
+        titleHighlight="Tutoriais em Vídeo"
+        subtitle="Saiba como baixar o UniTV APK e instalar o aplicativo no seu dispositivo. Clique no tutorial do seu aparelho e siga o passo a passo completo com vídeo."
+        cards={[
+          {
+            id: "tvbox",
+            title: "TV Box",
+            subtitle: "Instalação rápida",
+            modalTitle: "Instalação em TV Box",
+            modalVideoUrl: "https://youtu.be/mTbuLBzjG8E",
+            modalSteps: [
+              "Abra o navegador da TV Box (ex.: Chrome).",
+              {
+                text: "Acesse ",
+                link: {
+                  href: "https://baixa.app/unitvbox",
+                  label: "https://baixa.app/unitvbox",
+                },
+              },
+              "Faça o download, depois Abrir e Instalar.",
+            ],
+          },
+          {
+            id: "tvandroid",
+            title: "TV Android",
+            subtitle: "Downloader / Play Store",
+            modalTitle: "Instalação em TV Android",
+            modalVideoUrl: "https://youtu.be/9O-aStaDtFg",
+            modalSteps: [
+              "Na Play Store, procure por Downloader e instale.",
+              "Abra o app e use a barra de pesquisa.",
+              "Digite o código: 3364299 e aperte Go.",
+              "Quando pedir permissão, habilite Permitir desta fonte para o Downloader.",
+              "Instale o app UniTV.",
+            ],
+          },
+          {
+            id: "celular",
+            title: "Celular Android",
+            subtitle: "APK + permissões",
+            modalTitle: "Instalação em Celular Android",
+            modalVideoUrl: "https://youtu.be/OmPiR0tWFjY",
+            modalSteps: [
+              {
+                text: "Clique e baixe: ",
+                link: {
+                  href: "https://baixa.app/unitvcelular",
+                  label: "unitv-celular.apk",
+                },
+              },
+              'Abra o arquivo. Surgirá o aviso "Para sua segurança..."',
+              "Toque em Configurações e habilite Permitir desta fonte.",
+              "Volte e abra o arquivo novamente.",
+              "Toque em Instalar.",
+            ],
+          },
+          {
+            id: "pc-mac",
+            title: "PC / Mac",
+            subtitle: "Emulador recomendado",
+            modalTitle: "Instalação em PC / Mac",
+            modalImageSrc: "/images/unitvPCMAC.jpg",
+            modalSteps: [
+              "Baixe o emulador BlueStacks e o arquivo UniTV:",
+              {
+                text: "",
+                link: {
+                  href: "https://www.bluestacks.com",
+                  label: "Baixar BlueStacks",
+                },
+              },
+              {
+                text: "",
+                link: {
+                  href: "https://baixa.app/unitv",
+                  label: "Baixar UniTV",
+                },
+              },
+              "Instale o BlueStacks e execute.",
+              "Arraste o .apk da UniTV para dentro do BlueStacks.",
+              "Se canais/filmes ficarem pretos, mude para Reprodutor 2 nas configurações.",
+            ],
           },
         ]}
       />
