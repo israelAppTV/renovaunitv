@@ -53,13 +53,6 @@ export function Footer({ className }: { className?: string }) {
                   Dúvidas Frequentes
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/#planos"
-                  className="text-sm text-text/80 transition hover:text-primary"
-                >
-                </Link>
-              </li>
             </ul>
           </nav>
           <nav aria-label="Atalhos">
@@ -75,7 +68,7 @@ export function Footer({ className }: { className?: string }) {
               </li>
               <li>
                 <Link
-                  href="/#planos"
+                  href="/#tutoriais"
                   className="text-sm text-text/80 transition hover:text-primary"
                 >
                   Tutoriais
@@ -95,22 +88,6 @@ export function Footer({ className }: { className?: string }) {
                   className="text-sm text-text/80 transition hover:text-primary"
                 >
                   FAQ
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/aviso-legal"
-                  className="text-sm text-text/80 transition hover:text-primary"
-                >
-                  Aviso Legal
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/politica-privacidade"
-                  className="text-sm text-text/80 transition hover:text-primary"
-                >
-                  Política de Privacidade
                 </Link>
               </li>
             </ul>

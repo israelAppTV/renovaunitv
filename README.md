@@ -1,72 +1,54 @@
-# Marketplace de Códigos Digitais
+# Site UniTV (landing) + painel admin oculto
 
-Starter de ecommerce em Next.js 14 (App Router) com TypeScript, TailwindCSS e Supabase, seguindo as regras do `.cursorrules` e a arquitetura em `prompts/architecture.md`.
+Next.js 14 (App Router), TypeScript, Tailwind e **Supabase somente no servidor** (`service_role`) para importação e listagem de códigos. **Não há login nem Supabase Auth para visitantes** — apenas a página inicial com âncoras (`#planos`, `#tutoriais`, `#faq`).
 
 ## Stack
 
-- **Next.js 14** (App Router)
-- **TypeScript** (strict)
-- **TailwindCSS**
-- **Supabase** (auth + banco)
-- **Zod** (validação de env e schemas)
-- **React Hook Form** + **@hookform/resolvers**
-- **Axios**
+- Next.js 14, TypeScript, Tailwind, Zod
+- Supabase (Postgres + RPC); cliente **service role** só em rotas/API admin
+- Sessão admin: cookie httpOnly + JWT assinado (`jose`); senha com **bcrypt**
 
-## Estrutura
+## Estrutura (resumo)
 
 ```
 src/
-  app/              # Rotas e layouts (App Router)
-  components/       # Componentes de UI reutilizáveis (layout: Header, Footer, Container)
-  modules/          # Módulos de domínio
-    auth/           # Autenticação (AuthGuard, useAuthState)
-    cart/           # Carrinho (CartSummary)
-    products/       # Produtos (ProductCard)
-    orders/         # Pedidos (OrderStatusBadge)
-    admin/          # Admin (AdminGuard, useAdminCheck)
-  lib/              # Configurações e clientes
-    supabase/       # Cliente browser, server e middleware
-    env.ts          # Validação de variáveis de ambiente (Zod)
-  hooks/            # Re-exports de hooks dos módulos
-  services/         # Lógica de negócio (sem UI)
-  types/            # Tipos e interfaces globais
-  utils/            # Utilitários (cn, etc.)
+  app/
+    page.tsx              # Única página pública
+    [adminSecret]/        # Painel (URL secreta; compara env ADMIN_PANEL_SECRET)
+    api/admin/session     # Login / logout admin (JSON)
+    api/admin/codes/import
+  lib/
+    env.ts                # NEXT_PUBLIC_SUPABASE_URL
+    env.server.ts         # Service role + segredos admin (server-only)
+    supabase/service-role.ts
+  modules/admin/          # CodesImportForm
+  services/admin/         # Import, listagem, sessão
+database/migrations/      # SQL para aplicar no Supabase
 ```
 
-## Regras de arquitetura
+## Variáveis de ambiente
 
-- **Lógica de negócio** em `/services`, nunca dentro de componentes.
-- **Acesso a dados** centralizado em `lib/supabase` (server.ts / client.ts).
-- **Componentes** apenas apresentação; módulos agrupam por domínio (auth, cart, products, orders, admin).
+Copie `.env.example` para `.env.local` e preencha **todos** os campos. O build valida `NEXT_PUBLIC_SUPABASE_URL`; rotas admin exigem também `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PANEL_SECRET`, `ADMIN_PASSWORD_BCRYPT_HASH` e `ADMIN_SESSION_SECRET`.
 
-## Configuração
-
-1. Copie o exemplo de env:
-   ```bash
-   cp .env.example .env.local
-   ```
-2. Preencha no `.env.local`:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-3. As variáveis são validadas com Zod ao importar `@/lib/env` (build e runtime).
+**Painel:** abra no navegador `http://localhost:3000/<ADMIN_PANEL_SECRET>` (sem link no site).
 
 ## Scripts
 
 ```bash
-npm run dev    # Desenvolvimento
-npm run build  # Build de produção (requer .env com Supabase)
-npm run start  # Servir build
-npm run lint   # ESLint
+npm run dev
+npm run build
+npm run start
+npm run lint
 ```
+
+## Supabase
+
+Aplicar migrações em `database/migrations/` no SQL Editor (ou CLI), incluindo RPC `import_digital_codes_batch` restrita a `service_role` e políticas sem leitura anônima desnecessária em `products`/`categories` (conforme última migration).
 
 ## Rotas
 
-| Rota       | Descrição              |
-|-----------|------------------------|
-| `/`       | Início                 |
-| `/products` | Listagem de produtos |
-| `/orders` | Meus pedidos (auth)     |
-| `/cart`   | Carrinho               |
-| `/admin`  | Painel admin (role admin) |
-
-O layout global inclui Header (com navegação responsiva e Carrinho), Container e Footer.
+| Rota | Descrição |
+|------|-----------|
+| `/` | Landing (única página pública) |
+| `/<ADMIN_PANEL_SECRET>` | Login / dashboard interno |
+| `/<ADMIN_PANEL_SECRET>/codes` | Importar Excel + listar códigos |

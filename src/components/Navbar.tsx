@@ -8,7 +8,7 @@ import { Container } from "@/components/layout/Container";
 const navLinks = [
   { href: "/", label: "Início" },
   { href: "/#planos", label: "Comprar Recarga" },
-  { href: "/#planos", label: "Tutoriais" },
+  { href: "/#tutoriais", label: "Tutoriais" },
   { href: "/#faq", label: "Perguntas Frequentes" },
 ];
 

@@ -137,7 +137,7 @@ export function InstallTutorialsSection({
   if (!cards.length) return null;
 
   return (
-    <section className="py-16">
+    <section id="tutoriais" className="py-16">
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-text sm:text-4xl">
           {renderTitle(title, titleHighlight)}

@@ -6,8 +6,11 @@ import { InstallTutorialsSection } from "@/components/InstallTutorialsSection";
 import { PlansSection } from "@/components/PlansSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { TipsSectionWithModal } from "@/components/TipsSectionWithModal";
+import { getHomePlans } from "@/services/checkout/home-plans.service";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const plans = await getHomePlans();
+
   return (
     <div className="space-y-12 py-8">
       <Hero
@@ -21,7 +24,7 @@ export default function HomePage() {
         featureCards={[
           {
             title: "Pagamento",
-            mainText: "PIX ou Cartão",
+            mainText: "Somente PIX",
             description: "Compre recarga via PIX",
           },
           {
@@ -36,7 +39,7 @@ export default function HomePage() {
           },
         ]}
         ctaLabel="Comprar Recarga"
-        ctaHref="/#planos"
+        ctaHref="/checkout?plan=mensal"
         secondaryCtaLabel="Download e Instalação"
         secondaryCtaHref="/#planos"
         imageSrc="/images/hero-app.webp"
@@ -47,46 +50,7 @@ export default function HomePage() {
         title="Planos e Preços — Recarga Oficial"
         titleHighlight="Recarga Oficial"
         subtitle="Compare os planos e escolha a melhor opção para comprar sua assinatura. Recarga mensal ou anual com entrega imediata, pagamento via PIX e acesso completo a canais, filmes e séries."
-        plans={[
-          {
-            id: "mensal",
-            title: "Recarga Mensal",
-            periodLabel: "Assinatura por 30 dias",
-            priceCents: 2490,
-            shortDescription: "Comprar recarga mensal via PIX",
-            features: [
-              "Assista em 2 telas com a mesma conta",
-              "Canais ao vivo SD, HD e FHD",
-              "Filmes e séries sempre atualizados",
-              "Compatível com TV Box, celular e Smart TV",
-              "Código enviado na hora por e-mail",
-              "Suporte técnico + tutoriais de instalação",
-            ],
-            ctaLabel: "Comprar Recarga Mensal",
-            ctaHref: "/#planos",
-            detailsLabel: "Ver detalhes do Plano Mensal",
-            detailsHref: "/#planos",
-          },
-          {
-            id: "anual",
-            title: "Recarga Anual",
-            periodLabel: "Assinatura por 12 meses",
-            priceCents: 17990,
-            shortDescription: "Comprar assinatura anual — melhor custo",
-            features: [
-              "12 meses de acesso completo",
-              "Equivalente a ~R$15/mês — economize R$120",
-              "Canais ao vivo SD, HD e FHD",
-              "Filmes e séries + acesso em 2 telas",
-              "Funciona em TV Box, Smart TV e celular Android",
-              "Suporte dedicado por 1 ano inteiro",
-            ],
-            ctaLabel: "Comprar Recarga Anual",
-            ctaHref: "/#planos",
-            detailsLabel: "Ver detalhes do Plano Anual",
-            detailsHref: "/#planos",
-          },
-        ]}
+        plans={plans}
       />
       <InstallTutorialsSection
         title="UniTV Download e Instalação — Tutoriais em Vídeo"
@@ -225,9 +189,9 @@ export default function HomePage() {
           {
             id: "compre-pix",
             stepNumber: 2,
-            title: "Compre via PIX ou Cartão",
+            title: "Pague com PIX",
             description:
-              "Comprar recarga via PIX é instantâneo. Pagamento processado com segurança. Também aceitamos cartão de crédito.",
+              "Comprar recarga via PIX é instantâneo. Pagamento processado com segurança pelo PagBank.",
           },
           {
             id: "codigo-hora",
@@ -245,7 +209,7 @@ export default function HomePage() {
           },
         ]}
         ctaLabel="Comprar Recarga Agora"
-        ctaHref="/#planos"
+        ctaHref="/checkout?plan=mensal"
       />
       <TestimonialsSection
         title="Quem Compra Recarga, Recomenda"
@@ -263,7 +227,7 @@ export default function HomePage() {
             quote:
               "Cancelei minha operadora de TV tradicional e mudei pro UniTV. Melhor escolha que fiz! O catálogo de filmes é gigante, a família toda usa na TV da sala. Vale cada centavo.",
             author: "Camila L.",
-            plan: "Assinatura Semestral",
+            plan: "Assinatura Anual",
           },
           {
             id: "roberto-f",
@@ -284,13 +248,13 @@ export default function HomePage() {
             id: "codigo-apos-pagamento",
             question: "Como recebo meu código após o pagamento?",
             answer:
-              "Ao comprar sua recarga UniTV, nosso sistema envia automaticamente o código para o e-mail informado. A recarga UniTV tem entrega imediata: pagou via PIX, recebeu na hora. Para cartão de crédito, o código chega em poucos minutos após confirmação.",
+              "Ao comprar sua recarga UniTV, nosso sistema envia automaticamente o código para o e-mail informado. A recarga tem entrega imediata: pagou via PIX, recebeu na hora após a confirmação.",
           },
           {
             id: "formas-pagamento",
             question: "Quais são as formas de pagamento aceitas?",
             answer:
-              "Você pode comprar recarga UniTV via PIX (confirmação instantânea e entrega imediata do código) ou Cartão de Crédito. Todo o processamento é feito com segurança pela plataforma PagBank. O PIX é a forma mais rápida de comprar sua assinatura UniTV",
+              "Você pode comprar recarga UniTV apenas via PIX: confirmação rápida e entrega imediata do código. Todo o processamento é feito com segurança pela plataforma PagBank.",
           },
           {
             id: "plano-mensal-anual",
@@ -316,9 +280,9 @@ export default function HomePage() {
         title="Comprar Recarga UniTV Oficial — Assine Agora"
         description="Este é o UniTV site oficial. Compre sua UniTV recarga via PIX e receba o código com entrega imediata por e-mail. Comprar código UniTV é rápido: escolha entre os planos mensal e anual, faça o pagamento e receba na hora. Comprar acesso UniTV oficial com suporte completo para instalação em TV Box, celular e Smart TV."
         monthlyLabel="Comprar Recarga Mensal — R$ 24,90"
-        monthlyHref="/#planos"
+        monthlyHref="/checkout?plan=mensal"
         annualLabel="Comprar Recarga Anual — R$ 179,90"
-        annualHref="/#planos"
+        annualHref="/checkout?plan=anual"
         footerText="Precisa renovar assinatura UniTV ou tem dúvidas? Consulte nossas perguntas frequentes."
         footerHref="#faq"
       />
