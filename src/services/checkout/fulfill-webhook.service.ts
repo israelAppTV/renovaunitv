@@ -73,7 +73,12 @@ export async function fulfillPaidNotification(
   }
 
   let codeSent = false;
-  if (email) {
+  if (!email) {
+    console.warn(
+      "[webhook] Pedido sem customer_email — código atribuído mas e-mail não enviado",
+      paid.orderId
+    );
+  } else {
     const r = await sendOrderCodeEmail({
       to: email,
       productName,
@@ -81,6 +86,9 @@ export async function fulfillPaidNotification(
       orderId: paid.orderId,
     });
     codeSent = r.sent;
+    if (!r.sent && r.reason && r.reason !== "email_not_configured") {
+      console.error("[webhook] Falha ao enviar e-mail", paid.orderId, r.reason);
+    }
   }
 
   return { duplicate: false, codeSent };

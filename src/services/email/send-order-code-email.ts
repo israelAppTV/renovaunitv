@@ -1,19 +1,20 @@
 import "server-only";
 import { Resend } from "resend";
-import { z } from "zod";
 
-const emailEnvSchema = z.object({
-  RESEND_API_KEY: z.string().min(10).optional(),
-  RESEND_FROM: z.string().email().optional(),
-});
+/**
+ * Remetente permitido pelo Resend sem domínio próprio verificado (conta gratuita / testes).
+ * @see https://resend.com/docs/send-with-nextjs
+ */
+const RESEND_DEFAULT_FROM_NO_DOMAIN = "onboarding@resend.dev";
 
-function getEmailConfig(): { apiKey?: string; from?: string } {
-  const p = emailEnvSchema.safeParse(process.env);
-  if (!p.success) return {};
-  return {
-    apiKey: p.data.RESEND_API_KEY,
-    from: p.data.RESEND_FROM,
-  };
+function getEmailConfig(): { apiKey: string; from: string } | null {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey || apiKey.length < 10) return null;
+
+  const explicit = process.env.RESEND_FROM?.trim();
+  const from = explicit || RESEND_DEFAULT_FROM_NO_DOMAIN;
+
+  return { apiKey, from };
 }
 
 export async function sendOrderCodeEmail(options: {
@@ -22,14 +23,15 @@ export async function sendOrderCodeEmail(options: {
   code: string;
   orderId: string;
 }): Promise<{ sent: boolean; reason?: string }> {
-  const { apiKey, from } = getEmailConfig();
-  if (!apiKey || !from) {
+  const cfg = getEmailConfig();
+  if (!cfg) {
     console.warn(
-      "[email] RESEND_API_KEY ou RESEND_FROM ausente — código não enviado por e-mail."
+      "[email] RESEND_API_KEY ausente — código não enviado por e-mail."
     );
     return { sent: false, reason: "email_not_configured" };
   }
 
+  const { apiKey, from } = cfg;
   const resend = new Resend(apiKey);
   const { error } = await resend.emails.send({
     from,
@@ -53,6 +55,7 @@ export async function sendOrderCodeEmail(options: {
     return { sent: false, reason: error.message };
   }
 
+  console.info("[email] código enviado (pedido)", options.orderId);
   return { sent: true };
 }
 

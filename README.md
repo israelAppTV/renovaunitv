@@ -39,7 +39,10 @@ npm run dev
 npm run build
 npm run start
 npm run lint
+npm run test:resend -- seu@email.com
 ```
+
+`test:resend` lê `.env.local` e envia um e-mail de teste (remetente `onboarding@resend.dev` se você não tiver domínio no Resend). Exige `RESEND_API_KEY`.
 
 ## Supabase
 
