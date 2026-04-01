@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerEnv } from "@/lib/env.server";
 import { getPagBankEnv } from "@/lib/pagbank/env";
-import { extractPaidCharge } from "@/lib/pagbank/parse-paid-notification";
+import {
+  extractPaidCharge,
+  pagbankPayloadSummary,
+} from "@/lib/pagbank/parse-paid-notification";
 import { verifyPagBankWebhookSignature } from "@/lib/pagbank/verify-webhook";
 import { fulfillPaidNotification } from "@/services/checkout/fulfill-webhook.service";
 
@@ -29,8 +32,13 @@ export async function POST(request: Request) {
     return new Response("unconfigured", { status: 503 });
   }
 
-  const sig = request.headers.get("x-authenticity-token");
+  const sig =
+    request.headers.get("x-authenticity-token") ??
+    request.headers.get("X-Authenticity-Token");
   if (!verifyPagBankWebhookSignature(rawBody, token, sig)) {
+    console.warn(
+      "[webhook] assinatura inválida ou header x-authenticity-token ausente"
+    );
     return new Response("invalid signature", { status: 401 });
   }
 
@@ -43,11 +51,21 @@ export async function POST(request: Request) {
 
   const paid = extractPaidCharge(payload);
   if (!paid) {
+    console.warn(
+      "[webhook] ignorado: payload sem cobrança PAID + reference_id do pedido",
+      pagbankPayloadSummary(payload)
+    );
     return NextResponse.json({ ok: true, ignored: true });
   }
 
   try {
-    await fulfillPaidNotification(paid);
+    const result = await fulfillPaidNotification(paid);
+    if (!result.codeSent && !result.duplicate) {
+      console.warn(
+        "[webhook] fulfill ok mas e-mail não enviado (ver Resend / customer_email)",
+        paid.orderId
+      );
+    }
     return NextResponse.json({ ok: true });
   } catch (e) {
     if (e instanceof Error && e.message === "out_of_stock") {

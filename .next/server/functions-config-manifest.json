@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/api/webhooks/pagbank":{},"/api/admin/session":{},"/api/admin/codes/import":{},"/[adminSecret]":{},"/api/checkout":{},"/[adminSecret]/codes":{}}}
+{"version":1,"functions":{"/api/admin/codes/import":{},"/api/webhooks/pagbank":{},"/api/admin/session":{},"/api/checkout":{},"/[adminSecret]":{},"/[adminSecret]/codes":{}}}
