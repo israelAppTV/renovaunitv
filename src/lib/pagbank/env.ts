@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 
 const pagbankEnvSchema = z.object({
-  PAGBANK_TOKEN: z.string().min(10),
+  PAGBANK_TOKEN: z.string().min(10).transform((s) => s.trim()),
   PAGBANK_API_BASE_URL: z.string().url().optional(),
 });
 

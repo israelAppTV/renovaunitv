@@ -5,7 +5,10 @@ import {
   extractPaidCharge,
   pagbankPayloadSummary,
 } from "@/lib/pagbank/parse-paid-notification";
-import { verifyPagBankWebhookSignature } from "@/lib/pagbank/verify-webhook";
+import {
+  isPagBankSandboxApiBaseUrl,
+  verifyPagBankWebhookSignature,
+} from "@/lib/pagbank/verify-webhook";
 import { fulfillPaidNotification } from "@/services/checkout/fulfill-webhook.service";
 
 export const runtime = "nodejs";
@@ -26,8 +29,11 @@ export async function POST(request: Request) {
   }
 
   let token: string;
+  let apiBaseUrl: string;
   try {
-    token = getPagBankEnv().PAGBANK_TOKEN;
+    const env = getPagBankEnv();
+    token = env.PAGBANK_TOKEN;
+    apiBaseUrl = env.PAGBANK_API_BASE_URL;
   } catch {
     return new Response("unconfigured", { status: 503 });
   }
@@ -35,11 +41,26 @@ export async function POST(request: Request) {
   const sig =
     request.headers.get("x-authenticity-token") ??
     request.headers.get("X-Authenticity-Token");
-  if (!verifyPagBankWebhookSignature(rawBody, token, sig)) {
-    console.warn(
-      "[webhook] assinatura inválida ou header x-authenticity-token ausente"
-    );
-    return new Response("invalid signature", { status: 401 });
+  const sigTrim = sig?.trim() ?? "";
+  const signatureOk = verifyPagBankWebhookSignature(rawBody, token, sig);
+  const sandbox = isPagBankSandboxApiBaseUrl(apiBaseUrl);
+
+  if (!signatureOk) {
+    if (sandbox && !sigTrim) {
+      console.warn(
+        "[webhook] SANDBOX: x-authenticity-token ausente — processando mesmo assim (limitação conhecida do PagBank em sandbox; em produção o header é obrigatório)"
+      );
+    } else if (!sigTrim) {
+      console.warn(
+        "[webhook] recusado: x-authenticity-token ausente (defina PAGBANK_API_BASE_URL de sandbox para testes ou use token de produção com header válido)"
+      );
+      return new Response("invalid signature", { status: 401 });
+    } else {
+      console.warn(
+        "[webhook] recusado: assinatura não confere — use o mesmo PAGBANK_TOKEN do portal (Integrações) na Vercel, sem espaços extras"
+      );
+      return new Response("invalid signature", { status: 401 });
+    }
   }
 
   let payload: unknown;
