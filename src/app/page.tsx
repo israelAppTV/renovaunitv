@@ -218,7 +218,7 @@ export default async function HomePage() {
           {
             id: "rafael-m",
             quote:
-              "Comprei no sábado de tarde para assistir ao jogo e foi super rápido. Fiz o PIX e a liberação no meu celular foi em menos de 5 minutos. Imagem limpa e sem travamentos.",
+              "Comprei no sábado de tarde para assistir ao jogo. Fiz o PIX, recebi o e-mail com o código de recarga, coloquei no aplicativo e em menos de 5 minutos estava tudo liberado. Imagem limpa e sem travamentos.",
             author: "Rafael M.",
             plan: "Recarga Mensal",
           },
@@ -232,7 +232,7 @@ export default async function HomePage() {
           {
             id: "roberto-f",
             quote:
-              "Eu não sou muito bom com tecnologia, mas o suporte por e-mail teve muita paciência e me ajudou a configurar tudo na minha TV Samsung passo a passo. Atendimento nota 10!",
+              "Eu não sou muito bom com tecnologia, mas o suporte por e-mail teve muita paciência e me ajudou a configurar tudo na minha TV TCL passo a passo. Atendimento nota 10!",
             author: "Roberto F.",
             plan: "Assinatura Anual",
           },
