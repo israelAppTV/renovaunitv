@@ -42,7 +42,7 @@ npm run lint
 npm run test:resend -- seu@email.com
 ```
 
-`test:resend` lê `.env.local` e envia um e-mail de teste (remetente `onboarding@resend.dev` se você não tiver domínio no Resend). Exige `RESEND_API_KEY`.
+`test:resend` lê `.env.local` e envia um e-mail de teste. Em produção na Vercel defina `RESEND_FROM` com um endereço do domínio verificado no Resend (ex.: `noreply@renovaunitv.com.br`); só com `onboarding@resend.dev` o Resend não entrega para clientes arbitrários.
 
 ## Supabase
 

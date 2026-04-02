@@ -33,8 +33,8 @@ function loadEnvLocal() {
 loadEnvLocal();
 
 const apiKey = process.env.RESEND_API_KEY?.trim();
-const from =
-  process.env.RESEND_FROM?.trim() || "onboarding@resend.dev";
+const explicitFrom = process.env.RESEND_FROM?.trim();
+const from = explicitFrom || "onboarding@resend.dev";
 const to = process.argv[2]?.trim();
 
 if (!apiKey || apiKey.length < 10) {
@@ -44,6 +44,11 @@ if (!apiKey || apiKey.length < 10) {
 if (!to) {
   console.error("Uso: node scripts/test-resend.mjs seu@email.com");
   process.exit(1);
+}
+if (!explicitFrom) {
+  console.warn(
+    "Sem RESEND_FROM: usando onboarding@resend.dev — o Resend só entrega para o e-mail da conta. Para testar outro destinatário, defina RESEND_FROM=nome@seu-dominio-verificado.com.br"
+  );
 }
 
 const resend = new Resend(apiKey);
