@@ -55,86 +55,35 @@ export default async function HomePage() {
       <InstallTutorialsSection
         title="UniTV Download e Instalação — Tutoriais em Vídeo"
         titleHighlight="Tutoriais em Vídeo"
-        subtitle="Saiba como baixar o UniTV APK e instalar o aplicativo no seu dispositivo. Clique no tutorial do seu aparelho e siga o passo a passo completo com vídeo."
+        subtitle="Fire TV Stick e TV Box: assista ao vídeo passo a passo. No celular Android, fale conosco pelo WhatsApp para receber o link de download atualizado."
         cards={[
           {
-            id: "tvbox",
-            title: "TV Box",
-            subtitle: "Instalação rápida",
-            modalTitle: "Instalação em TV Box",
-            modalVideoUrl: "https://youtu.be/mTbuLBzjG8E",
+            id: "firetv",
+            title: "Fire TV Stick",
+            subtitle: "Tutorial em vídeo",
+            modalTitle: "Instalação no Fire TV Stick",
+            modalVideoUrl:
+              "https://www.youtube.com/watch?v=yOtNsX0VfmU",
             modalSteps: [
-              "Abra o navegador da TV Box (ex.: Chrome).",
-              {
-                text: "Acesse ",
-                link: {
-                  href: "https://baixa.app/unitvbox",
-                  label: "https://baixa.app/unitvbox",
-                },
-              },
-              "Faça o download, depois Abrir e Instalar.",
+              "Assista ao vídeo completo para baixar e instalar o UniTV no Amazon Fire TV Stick.",
             ],
           },
           {
-            id: "tvandroid",
-            title: "TV Android",
-            subtitle: "Downloader / Play Store",
-            modalTitle: "Instalação em TV Android",
-            modalVideoUrl: "https://youtu.be/9O-aStaDtFg",
+            id: "tvbox",
+            title: "TV Box",
+            subtitle: "Tutorial em vídeo",
+            modalTitle: "Instalação em TV Box",
+            modalVideoUrl:
+              "https://www.youtube.com/watch?v=S67OL4PHKag",
             modalSteps: [
-              "Na Play Store, procure por Downloader e instale.",
-              "Abra o app e use a barra de pesquisa.",
-              "Digite o código: 3364299 e aperte Go.",
-              "Quando pedir permissão, habilite Permitir desta fonte para o Downloader.",
-              "Instale o app UniTV.",
+              "Assista ao vídeo completo para baixar e instalar o UniTV na sua TV Box.",
             ],
           },
           {
             id: "celular",
             title: "Celular Android",
-            subtitle: "APK + permissões",
-            modalTitle: "Instalação em Celular Android",
-            modalVideoUrl: "https://youtu.be/OmPiR0tWFjY",
-            modalSteps: [
-              {
-                text: "Clique e baixe: ",
-                link: {
-                  href: "https://baixa.app/unitvcelular",
-                  label: "unitv-celular.apk",
-                },
-              },
-              'Abra o arquivo. Surgirá o aviso "Para sua segurança..."',
-              "Toque em Configurações e habilite Permitir desta fonte.",
-              "Volte e abra o arquivo novamente.",
-              "Toque em Instalar.",
-            ],
-          },
-          {
-            id: "pc-mac",
-            title: "PC / Mac",
-            subtitle: "Emulador recomendado",
-            modalTitle: "Instalação em PC / Mac",
-            modalImageSrc: "/images/unitvPCMAC.jpg",
-            modalSteps: [
-              "Baixe o emulador BlueStacks e o arquivo UniTV:",
-              {
-                text: "",
-                link: {
-                  href: "https://www.bluestacks.com",
-                  label: "Baixar BlueStacks",
-                },
-              },
-              {
-                text: "",
-                link: {
-                  href: "https://baixa.app/unitv",
-                  label: "Baixar UniTV",
-                },
-              },
-              "Instale o BlueStacks e execute.",
-              "Arraste o .apk da UniTV para dentro do BlueStacks.",
-              "Se canais/filmes ficarem pretos, mude para Reprodutor 2 nas configurações.",
-            ],
+            subtitle: "Link de download pelo WhatsApp",
+            externalHref: "https://wa.me/5562998060804",
           },
         ]}
       />
