@@ -14,6 +14,10 @@ import { fulfillPaidNotification } from "@/services/checkout/fulfill-webhook.ser
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function shouldHomologLog(): boolean {
+  return process.env.PAGBANK_HOMOLOG_LOGS === "true";
+}
+
 export async function POST(request: Request) {
   try {
     getServerEnv();
@@ -63,6 +67,18 @@ export async function POST(request: Request) {
     }
   }
 
+  if (shouldHomologLog()) {
+    console.info("[homolog][pagbank] request /api/webhooks/pagbank", {
+      contentType: request.headers.get("content-type"),
+      hasAuthenticityToken: Boolean(sigTrim),
+      xProductOrigin: request.headers.get("x-product-origin"),
+      xProductId: request.headers.get("x-product-id"),
+      signatureOk,
+      sandbox,
+      rawBody: rawBody,
+    });
+  }
+
   let payload: unknown;
   try {
     payload = JSON.parse(rawBody);
@@ -81,6 +97,14 @@ export async function POST(request: Request) {
 
   try {
     const result = await fulfillPaidNotification(paid);
+    if (shouldHomologLog()) {
+      console.info("[homolog][pagbank] response /api/webhooks/pagbank", {
+        status: 200,
+        ok: true,
+        paid,
+        fulfill: result,
+      });
+    }
     if (!result.codeSent && !result.duplicate) {
       console.warn(
         "[webhook] fulfill ok mas e-mail não enviado (ver Resend / customer_email)",

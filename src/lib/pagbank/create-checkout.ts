@@ -68,6 +68,17 @@ function findPayUrl(links: unknown): string | null {
   return null;
 }
 
+function shouldHomologLog(): boolean {
+  return process.env.PAGBANK_HOMOLOG_LOGS === "true";
+}
+
+function redactEmail(email: string): string {
+  const [name, domain] = email.split("@");
+  if (!name || !domain) return "***";
+  const visible = name.slice(0, 2);
+  return `${visible}***@${domain}`;
+}
+
 export async function createPagBankCheckout(
   input: CreateCheckoutInput
 ): Promise<CreateCheckoutResult> {
@@ -102,6 +113,26 @@ export async function createPagBankCheckout(
     payment_notification_urls: input.paymentNotificationUrls,
   };
 
+  if (shouldHomologLog()) {
+    console.info("[homolog][pagbank] request /checkouts", {
+      method: "POST",
+      url,
+      authorization: `Bearer ${PAGBANK_TOKEN.slice(0, 6)}...`,
+      body: {
+        ...body,
+        customer: {
+          ...body.customer,
+          email: redactEmail(body.customer.email),
+          tax_id: "***",
+          phone: {
+            ...body.customer.phone,
+            number: "***",
+          },
+        },
+      },
+    });
+  }
+
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -116,6 +147,14 @@ export async function createPagBankCheckout(
     string,
     unknown
   >;
+
+  if (shouldHomologLog()) {
+    console.info("[homolog][pagbank] response /checkouts", {
+      status: res.status,
+      ok: res.ok,
+      body: json,
+    });
+  }
 
   if (!res.ok) {
     const detail =
