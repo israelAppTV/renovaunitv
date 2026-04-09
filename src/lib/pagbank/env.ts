@@ -21,7 +21,7 @@ export function getPagBankEnv(): PagBankEnv {
     );
   }
   const base =
-    parsed.data.PAGBANK_API_BASE_URL ?? "https://sandbox.api.pagseguro.com";
+    parsed.data.PAGBANK_API_BASE_URL ?? "https://api.pagseguro.com";
   cached = { ...parsed.data, PAGBANK_API_BASE_URL: base };
   return cached;
 }
