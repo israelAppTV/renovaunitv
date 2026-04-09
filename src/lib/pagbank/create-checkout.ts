@@ -79,6 +79,14 @@ function redactEmail(email: string): string {
   return `${visible}***@${domain}`;
 }
 
+function safeStringify(value: unknown): string {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '"<unserializable>"';
+  }
+}
+
 export async function createPagBankCheckout(
   input: CreateCheckoutInput
 ): Promise<CreateCheckoutResult> {
@@ -114,7 +122,7 @@ export async function createPagBankCheckout(
   };
 
   if (shouldHomologLog()) {
-    console.info("[homolog][pagbank] request /checkouts", {
+    const sanitizedRequest = {
       method: "POST",
       url,
       authorization: `Bearer ${PAGBANK_TOKEN.slice(0, 6)}...`,
@@ -130,7 +138,11 @@ export async function createPagBankCheckout(
           },
         },
       },
-    });
+    };
+    console.info(
+      "[homolog][pagbank] request /checkouts full_json",
+      safeStringify(sanitizedRequest)
+    );
   }
 
   const res = await fetch(url, {
@@ -149,11 +161,15 @@ export async function createPagBankCheckout(
   >;
 
   if (shouldHomologLog()) {
-    console.info("[homolog][pagbank] response /checkouts", {
+    const fullResponse = {
       status: res.status,
       ok: res.ok,
       body: json,
-    });
+    };
+    console.info(
+      "[homolog][pagbank] response /checkouts full_json",
+      safeStringify(fullResponse)
+    );
   }
 
   if (!res.ok) {
