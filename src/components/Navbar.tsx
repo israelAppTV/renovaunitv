@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -11,24 +12,6 @@ const navLinks = [
   { href: "/#tutoriais", label: "Tutoriais" },
   { href: "/#faq", label: "Perguntas Frequentes" },
 ];
-
-function LogoIcon() {
-  return (
-    <span
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-primary to-accent p-1.5"
-      aria-hidden
-    >
-      <svg
-        className="h-full w-full text-white"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        aria-hidden
-      >
-        <path d="M8 5v14l11-7L8 5z" />
-      </svg>
-    </span>
-  );
-}
 
 export function Navbar() {
   const pathname = usePathname();
@@ -42,7 +25,14 @@ export function Navbar() {
             href="/"
             className="flex items-center gap-2 transition opacity-90 hover:opacity-100"
           >
-            <LogoIcon />
+            <Image
+              src="/logo.png"
+              alt=""
+              width={40}
+              height={40}
+              className="h-8 w-8 shrink-0 object-contain"
+              priority
+            />
             <span className="text-lg font-bold tracking-tight">
               <span className="text-text">UniTV </span>
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

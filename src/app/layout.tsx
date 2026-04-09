@@ -6,8 +6,11 @@ import { Container } from "@/components/layout/Container";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Marketplace de Códigos",
+  title: "Renova UnitTV",
   description: "Loja de códigos digitais",
+  icons: {
+    icon: "/logo.ico",
+  },
 };
 
 export default function RootLayout({
