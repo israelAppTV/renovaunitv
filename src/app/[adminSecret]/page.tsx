@@ -25,16 +25,14 @@ export default async function AdminSecretHomePage({ params }: AdminHomeProps) {
     <div className="py-8">
       <h1 className="text-2xl font-bold text-text">Painel</h1>
       <p className="mt-2 text-sm text-text/70">Gestão interna (URL não divulgada).</p>
-      <ul className="mt-6 space-y-2">
-        <li>
-          <Link
-            href={`/${adminSecret}/codes`}
-            className="font-medium text-primary hover:underline"
-          >
-            Códigos digitais — importar planilha e listagem
-          </Link>
-        </li>
-      </ul>
+      <div className="mt-6">
+        <Link
+          href={`/${adminSecret}/codes`}
+          className="inline-flex items-center rounded-xl border border-primary/50 bg-primary/15 px-5 py-3 text-sm font-semibold text-primary transition hover:border-primary hover:bg-primary/20"
+        >
+          Códigos digitais - importar planilha e listagem
+        </Link>
+      </div>
       <AdminLogoutButton />
     </div>
   );

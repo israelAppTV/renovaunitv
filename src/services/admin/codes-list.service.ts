@@ -16,6 +16,10 @@ export interface ListDigitalCodesPageResult {
   page: number;
   pageSize: number;
   totalPages: number;
+  summary: {
+    available: number;
+    used: number;
+  };
 }
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -24,6 +28,7 @@ const MAX_PAGE_SIZE = 100;
 export async function listDigitalCodesForAdmin(options: {
   page?: number;
   pageSize?: number;
+  status?: "available" | "used";
 } = {}): Promise<ListDigitalCodesPageResult> {
   const pageSize = Math.min(
     MAX_PAGE_SIZE,
@@ -32,9 +37,26 @@ export async function listDigitalCodesForAdmin(options: {
   const requestedPage = Math.max(1, Math.floor(options.page ?? 1));
 
   const supabase = createServiceRoleClient();
-  const { count } = await supabase
+  const countByStatus = async (status: AdminDigitalCodeRow["status"]) => {
+    const { count: scopedCount } = await supabase
+      .from("digital_codes")
+      .select("id", { count: "exact", head: true })
+      .eq("status", status);
+    return scopedCount ?? 0;
+  };
+
+  const [availableCount, usedCount] = await Promise.all([
+    countByStatus("available"),
+    countByStatus("used"),
+  ]);
+
+  const countQuery = supabase
     .from("digital_codes")
     .select("id", { count: "exact", head: true });
+  if (options.status) {
+    countQuery.eq("status", options.status);
+  }
+  const { count } = await countQuery;
 
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -42,11 +64,14 @@ export async function listDigitalCodesForAdmin(options: {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  const { data: codes, error } = await supabase
+  const rowsQuery = supabase
     .from("digital_codes")
     .select("id, code, status, product_id, used_at, used_by_order")
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    .order("created_at", { ascending: false });
+  if (options.status) {
+    rowsQuery.eq("status", options.status);
+  }
+  const { data: codes, error } = await rowsQuery.range(from, to);
 
   if (error) {
     return {
@@ -55,6 +80,10 @@ export async function listDigitalCodesForAdmin(options: {
       page,
       pageSize,
       totalPages,
+      summary: {
+        available: availableCount,
+        used: usedCount,
+      },
     };
   }
 
@@ -66,6 +95,10 @@ export async function listDigitalCodesForAdmin(options: {
       page,
       pageSize,
       totalPages,
+      summary: {
+        available: availableCount,
+        used: usedCount,
+      },
     };
   }
 
@@ -118,5 +151,9 @@ export async function listDigitalCodesForAdmin(options: {
     page,
     pageSize,
     totalPages,
+    summary: {
+      available: availableCount,
+      used: usedCount,
+    },
   };
 }

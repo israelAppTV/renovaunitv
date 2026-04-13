@@ -36,9 +36,15 @@ export default async function AdminCodesPage({
   const pageStr = Array.isArray(rawPage) ? rawPage[0] : rawPage;
   const parsed = parseInt(pageStr ?? "1", 10);
   const page = Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+  const rawStatus = searchParams.status;
+  const statusStr = Array.isArray(rawStatus) ? rawStatus[0] : rawStatus;
+  const statusFilter =
+    statusStr === "available" || statusStr === "used" ? statusStr : undefined;
 
-  const { rows, total, page: currentPage, pageSize, totalPages } =
-    await listDigitalCodesForAdmin({ page });
+  const { rows, total, page: currentPage, pageSize, totalPages, summary } =
+    await listDigitalCodesForAdmin({ page, status: statusFilter });
+  const availableLow = summary.available > 0 && summary.available <= 10;
+  const availableEmpty = summary.available === 0;
 
   return (
     <div className="space-y-10 py-4">
@@ -58,7 +64,58 @@ export default async function AdminCodesPage({
       <CodesImportForm />
 
       <div>
-        <h2 className="text-lg font-semibold text-text">Estoque importado</h2>
+        <h2 className="text-lg font-semibold text-text">Resumo do estoque</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <Link
+            href={`/${adminSecret}/codes?status=available`}
+            className={`rounded-xl border bg-card p-4 transition dark:border-gray-800 ${
+              statusFilter === "available"
+                ? "border-primary/70 ring-1 ring-primary/50"
+                : "border-gray-200 hover:border-primary/50"
+            }`}
+          >
+            <p className="text-xs uppercase tracking-wide text-text/70">Disponíveis</p>
+            <p className="mt-1 text-2xl font-bold text-text">{summary.available}</p>
+          </Link>
+          <Link
+            href={`/${adminSecret}/codes?status=used`}
+            className={`rounded-xl border bg-card p-4 transition dark:border-gray-800 ${
+              statusFilter === "used"
+                ? "border-primary/70 ring-1 ring-primary/50"
+                : "border-gray-200 hover:border-primary/50"
+            }`}
+          >
+            <p className="text-xs uppercase tracking-wide text-text/70">Vendidos / usados</p>
+            <p className="mt-1 text-2xl font-bold text-text">{summary.used}</p>
+          </Link>
+        </div>
+        {statusFilter && (
+          <div className="mt-3">
+            <Link
+              href={`/${adminSecret}/codes`}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              Limpar filtro e mostrar todos
+            </Link>
+          </div>
+        )}
+        {(availableEmpty || availableLow) && (
+          <p className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+            {availableEmpty
+              ? "Estoque disponível esgotado. Reabasteça importando novos códigos."
+              : "Estoque disponível baixo. Recomendado reabastecer em breve."}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-text">
+          {statusFilter === "used"
+            ? "Estoque importado — apenas vendidos/usados"
+            : statusFilter === "available"
+              ? "Estoque importado — apenas disponíveis"
+              : "Estoque importado"}
+        </h2>
         <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
           <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-800">
             <thead className="bg-background">
@@ -121,6 +178,7 @@ export default async function AdminCodesPage({
           totalPages={totalPages}
           total={total}
           pageSize={pageSize}
+          status={statusFilter}
         />
       </div>
 

@@ -6,6 +6,7 @@ interface CodesPaginationProps {
   totalPages: number;
   total: number;
   pageSize: number;
+  status?: "available" | "used";
 }
 
 export function CodesPagination({
@@ -14,10 +15,18 @@ export function CodesPagination({
   totalPages,
   total,
   pageSize,
+  status,
 }: CodesPaginationProps) {
   if (total === 0) return null;
 
   const base = `/${adminSecret}/codes`;
+  const hrefForPage = (targetPage: number) => {
+    const params = new URLSearchParams();
+    if (targetPage > 1) params.set("page", String(targetPage));
+    if (status) params.set("status", status);
+    const query = params.toString();
+    return query ? `${base}?${query}` : base;
+  };
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
 
@@ -36,7 +45,7 @@ export function CodesPagination({
       <div className="flex flex-wrap items-center gap-2">
         {prev != null ? (
           <Link
-            href={prev === 1 ? base : `${base}?page=${prev}`}
+            href={hrefForPage(prev)}
             className="rounded-lg border border-gray-300 bg-background px-3 py-1.5 text-sm font-medium text-text transition hover:bg-primary/10 dark:border-gray-600"
           >
             Anterior
@@ -51,7 +60,7 @@ export function CodesPagination({
         </span>
         {next != null ? (
           <Link
-            href={`${base}?page=${next}`}
+            href={hrefForPage(next)}
             className="rounded-lg border border-gray-300 bg-background px-3 py-1.5 text-sm font-medium text-text transition hover:bg-primary/10 dark:border-gray-600"
           >
             Próxima
