@@ -15,6 +15,18 @@ export interface CreateDepixCheckoutResult {
   raw: unknown;
 }
 
+function shouldHomologLog(): boolean {
+  return process.env.DEPIX_HOMOLOG_LOGS === "true";
+}
+
+function safeStringify(value: unknown): string {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '"<unserializable>"';
+  }
+}
+
 function extractDepixErrorMessage(json: unknown): string {
   if (!json || typeof json !== "object") return "Falha ao criar checkout.";
   const obj = json as Record<string, unknown>;
@@ -35,6 +47,26 @@ export async function createDepixCheckout(
   input: CreateDepixCheckoutInput
 ): Promise<CreateDepixCheckoutResult> {
   const { DEPIX_API_KEY, DEPIX_API_BASE_URL } = getDepixEnv();
+  const requestBody = {
+    amount: input.amount,
+    description: input.description,
+    callback_url: input.callbackUrl,
+    redirect_url: input.redirectUrl,
+    metadata: input.metadata,
+  };
+
+  if (shouldHomologLog()) {
+    console.info(
+      "[homolog][depix] request /api/checkouts full_json",
+      safeStringify({
+        method: "POST",
+        url: `${DEPIX_API_BASE_URL}/api/checkouts`,
+        authorization: `Bearer ${DEPIX_API_KEY.slice(0, 10)}...`,
+        body: requestBody,
+      })
+    );
+  }
+
   const res = await fetch(`${DEPIX_API_BASE_URL}/api/checkouts`, {
     method: "POST",
     headers: {
@@ -42,16 +74,20 @@ export async function createDepixCheckout(
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({
-      amount: input.amount,
-      description: input.description,
-      callback_url: input.callbackUrl,
-      redirect_url: input.redirectUrl,
-      metadata: input.metadata,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  if (shouldHomologLog()) {
+    console.info(
+      "[homolog][depix] response /api/checkouts full_json",
+      safeStringify({
+        status: res.status,
+        ok: res.ok,
+        body: json,
+      })
+    );
+  }
   if (!res.ok) {
     throw new Error(`DePix checkout ${res.status}: ${extractDepixErrorMessage(json)}`);
   }

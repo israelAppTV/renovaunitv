@@ -7,6 +7,10 @@ import { createCheckoutOrder } from "@/services/checkout/create-checkout-order.s
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function shouldHomologLog(): boolean {
+  return process.env.DEPIX_HOMOLOG_LOGS === "true";
+}
+
 const bodySchema = z.object({
   planSlug: z.enum(["mensal", "anual"]),
   customer: z.object({
@@ -80,12 +84,22 @@ export async function POST(request: Request) {
       phoneNumber,
       clientIp: getClientIp(request),
     });
+    if (shouldHomologLog()) {
+      console.info("[homolog][depix] response /api/checkout", {
+        ok: true,
+        orderId: result.orderId,
+        hasUrl: Boolean(result.payUrl),
+      });
+    }
     return NextResponse.json({
       url: result.payUrl,
       orderId: result.orderId,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Erro ao iniciar checkout.";
+    if (shouldHomologLog()) {
+      console.error("[homolog][depix] error /api/checkout", { error: msg });
+    }
     const status = msg.includes("estoque") ? 409 : 400;
     return NextResponse.json({ error: msg }, { status });
   }

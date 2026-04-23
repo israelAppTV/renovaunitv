@@ -7,6 +7,18 @@ import { fulfillPaidNotification } from "@/services/checkout/fulfill-webhook.ser
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function shouldHomologLog(): boolean {
+  return process.env.DEPIX_HOMOLOG_LOGS === "true";
+}
+
+function safeStringify(value: unknown): string {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '"<unserializable>"';
+  }
+}
+
 interface DepixWebhookPayload {
   event?: string;
   data?: {
@@ -52,6 +64,17 @@ export async function POST(request: Request) {
     request.headers.get("x-depix-signature") ??
     request.headers.get("X-DePix-Signature");
   const signatureOk = verifyDepixWebhookSignature(rawBody, sig, webhookSecret);
+  if (shouldHomologLog()) {
+    console.info(
+      "[homolog][depix] request /api/webhooks/depix",
+      safeStringify({
+        contentType: request.headers.get("content-type"),
+        hasDepixSignature: Boolean(sig?.trim()),
+        signatureOk,
+        rawBody,
+      })
+    );
+  }
   if (!signatureOk) {
     return new Response("invalid signature", { status: 401 });
   }
@@ -65,6 +88,12 @@ export async function POST(request: Request) {
 
   const paid = parsePaidEvent(payload);
   if (!paid) {
+    if (shouldHomologLog()) {
+      console.info(
+        "[homolog][depix] ignored /api/webhooks/depix",
+        safeStringify({ payload })
+      );
+    }
     return NextResponse.json({ ok: true, ignored: true });
   }
 
@@ -78,6 +107,17 @@ export async function POST(request: Request) {
       console.warn(
         "[webhook][depix] fulfill ok mas e-mail não enviado (ver Resend / customer_email)",
         paid.orderId
+      );
+    }
+    if (shouldHomologLog()) {
+      console.info(
+        "[homolog][depix] response /api/webhooks/depix",
+        safeStringify({
+          status: 200,
+          ok: true,
+          paid,
+          fulfill: result,
+        })
       );
     }
     return NextResponse.json({ ok: true });
