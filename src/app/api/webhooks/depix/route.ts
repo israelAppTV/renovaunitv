@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerEnv } from "@/lib/env.server";
 import { getDepixEnv } from "@/lib/depix/env";
 import { verifyDepixWebhookSignature } from "@/lib/depix/verify-webhook";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { fulfillPaidNotification } from "@/services/checkout/fulfill-webhook.service";
 
 export const runtime = "nodejs";
@@ -29,14 +30,30 @@ interface DepixWebhookPayload {
   };
 }
 
-function parsePaidEvent(payload: unknown): { orderId: string; paymentId: string } | null {
+function parsePaidEvent(payload: unknown): { orderId?: string; paymentId: string } | null {
   if (!payload || typeof payload !== "object") return null;
   const p = payload as DepixWebhookPayload;
   if (p.event !== "checkout.completed") return null;
-  const orderId = p.data?.metadata?.order_id;
   const paymentId = p.data?.id;
-  if (!orderId || !paymentId) return null;
+  if (!paymentId) return null;
+  const orderId = p.data?.metadata?.order_id;
   return { orderId, paymentId };
+}
+
+async function resolveOrderId(
+  paid: ReturnType<typeof parsePaidEvent>
+): Promise<string | null> {
+  if (!paid) return null;
+  if (paid.orderId) return paid.orderId;
+
+  const supabase = createServiceRoleClient();
+  const { data } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("depix_checkout_id", paid.paymentId)
+    .maybeSingle();
+
+  return (data?.id as string | undefined) ?? null;
 }
 
 export async function POST(request: Request) {
@@ -96,17 +113,25 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ ok: true, ignored: true });
   }
+  const orderId = await resolveOrderId(paid);
+  if (!orderId) {
+    console.warn(
+      "[webhook][depix] checkout.completed sem order_id no metadata e sem match por depix_checkout_id",
+      paid.paymentId
+    );
+    return NextResponse.json({ ok: true, ignored: true });
+  }
 
   try {
     const result = await fulfillPaidNotification({
-      orderId: paid.orderId,
+      orderId,
       paymentId: paid.paymentId,
       paymentMethod: "pix",
     });
     if (!result.codeSent && !result.duplicate) {
       console.warn(
         "[webhook][depix] fulfill ok mas e-mail não enviado (ver Resend / customer_email)",
-        paid.orderId
+        orderId
       );
     }
     if (shouldHomologLog()) {
@@ -115,7 +140,7 @@ export async function POST(request: Request) {
         safeStringify({
           status: 200,
           ok: true,
-          paid,
+          paid: { ...paid, orderId },
           fulfill: result,
         })
       );
@@ -123,7 +148,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch (e) {
     if (e instanceof Error && e.message === "out_of_stock") {
-      console.error("[webhook][depix] out_of_stock", paid.orderId);
+      console.error("[webhook][depix] out_of_stock", orderId);
       return NextResponse.json(
         { ok: false, error: "out_of_stock" },
         { status: 500 }
