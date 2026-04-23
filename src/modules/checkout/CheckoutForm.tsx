@@ -58,7 +58,7 @@ export function CheckoutForm() {
       <div>
         <h1 className="text-2xl font-bold text-text">Finalizar compra</h1>
         <p className="mt-1 text-sm text-text/70">
-          Informe seus dados para pagamento seguro via PagBank (somente PIX).
+          Informe seus dados para pagamento seguro via PIX.
         </p>
       </div>
 
@@ -178,7 +178,7 @@ export function CheckoutForm() {
         disabled={loading}
         className="w-full rounded-xl bg-gradient-to-r from-primary to-accent py-3.5 font-semibold text-white shadow-lg transition hover:opacity-90 disabled:opacity-50"
       >
-        {loading ? "Redirecionando…" : "Ir para o PagBank"}
+        {loading ? "Redirecionando…" : "Ir para o pagamento PIX"}
       </button>
 
       <p className="text-center text-xs text-text/60">

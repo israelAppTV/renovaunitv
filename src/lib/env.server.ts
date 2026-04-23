@@ -28,6 +28,9 @@ const serverEnvSchema = z.object({
   ADMIN_PANEL_SECRET: z.string().min(16),
   ADMIN_PASSWORD_BCRYPT_HASH: z.string().min(20),
   ADMIN_SESSION_SECRET: z.string().min(32),
+  DEPIX_API_KEY: z.string().min(1),
+  DEPIX_WEBHOOK_SECRET: z.string().min(1),
+  DEPIX_API_BASE_URL: z.string().url().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerEnv } from "@/lib/env.server";
-import { getPagBankEnv } from "@/lib/pagbank/env";
+import { getDepixEnv } from "@/lib/depix/env";
 import { createCheckoutOrder } from "@/services/checkout/create-checkout-order.service";
 
 export const runtime = "nodejs";
@@ -18,11 +18,6 @@ const bodySchema = z.object({
   }),
 });
 
-function hasNomeESobrenome(name: string): boolean {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  return parts.length >= 2;
-}
-
 function getClientIp(request: Request): string | null {
   const xff = request.headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0]?.trim() ?? null;
@@ -32,7 +27,7 @@ function getClientIp(request: Request): string | null {
 export async function POST(request: Request) {
   try {
     getServerEnv();
-    getPagBankEnv();
+    getDepixEnv();
   } catch {
     return NextResponse.json(
       { error: "Servidor não configurado." },
@@ -55,16 +50,6 @@ export async function POST(request: Request) {
   const taxDigits = parsed.data.customer.taxId.replace(/\D/g, "");
   if (taxDigits.length !== 11 && taxDigits.length !== 14) {
     return NextResponse.json({ error: "CPF/CNPJ inválido." }, { status: 400 });
-  }
-
-  if (!hasNomeESobrenome(parsed.data.customer.name)) {
-    return NextResponse.json(
-      {
-        error:
-          "Informe nome e sobrenome (ex.: Maria Silva), conforme exige o PagBank.",
-      },
-      { status: 400 }
-    );
   }
 
   const phoneArea = parsed.data.customer.phoneArea.replace(/\D/g, "").slice(0, 2);

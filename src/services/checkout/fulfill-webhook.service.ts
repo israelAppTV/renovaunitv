@@ -1,6 +1,5 @@
 import "server-only";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
-import type { PaidNotificationExtract } from "@/lib/pagbank/parse-paid-notification";
 import { sendOrderCodeEmail } from "@/services/email/send-order-code-email";
 
 interface FulfillRpcRow {
@@ -10,16 +9,22 @@ interface FulfillRpcRow {
   reason?: string;
 }
 
+export interface PaidNotificationInput {
+  orderId: string;
+  paymentId: string;
+  paymentMethod?: string | null;
+}
+
 export async function fulfillPaidNotification(
-  paid: PaidNotificationExtract
+  paid: PaidNotificationInput
 ): Promise<{ duplicate: boolean; codeSent: boolean }> {
   const supabase = createServiceRoleClient();
-  const idempotencyKey = `${paid.chargeId}:PAID`;
+  const idempotencyKey = `${paid.paymentId}:PAID`;
 
-  const { data, error } = await supabase.rpc("fulfill_order_pagbank_payment", {
+  const { data, error } = await supabase.rpc("fulfill_order_payment", {
     p_order_id: paid.orderId,
     p_idempotency_key: idempotencyKey,
-    p_charge_id: paid.chargeId,
+    p_payment_id: paid.paymentId,
     p_payment_method: paid.paymentMethod,
   });
 

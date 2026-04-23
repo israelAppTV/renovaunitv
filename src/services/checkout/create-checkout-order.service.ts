@@ -1,6 +1,6 @@
 import "server-only";
-import { createPagBankCheckout } from "@/lib/pagbank/create-checkout";
-import { assertUrlAllowedForPagBankCallbacks, getPublicSiteUrl } from "@/lib/site-url";
+import { createDepixCheckout } from "@/lib/depix/create-checkout";
+import { assertUrlAllowedForPaymentCallbacks, getPublicSiteUrl } from "@/lib/site-url";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import {
   countAvailableCodes,
@@ -38,8 +38,8 @@ export async function createCheckoutOrder(
 
   const supabase = createServiceRoleClient();
   const site = getPublicSiteUrl();
-  assertUrlAllowedForPagBankCallbacks(site);
-  const webhookUrl = `${site}/api/webhooks/pagbank`;
+  assertUrlAllowedForPaymentCallbacks(site);
+  const webhookUrl = `${site}/api/webhooks/depix`;
 
   const { data: orderRow, error: orderErr } = await supabase
     .from("orders")
@@ -70,39 +70,25 @@ export async function createCheckoutOrder(
   }
 
   try {
-    const { checkoutId, payUrl } = await createPagBankCheckout({
-      referenceId: orderId,
-      customer: {
-        name: input.customerName.trim(),
-        email: input.customerEmail.trim().toLowerCase(),
-        tax_id: input.taxIdDigits,
-        phone: {
-          country: "55",
-          area: input.phoneArea.replace(/\D/g, "").slice(0, 2),
-          number: input.phoneNumber.replace(/\D/g, "").slice(0, 9),
-        },
-      },
-      items: [
-        {
-          reference_id: product.slug ?? product.id,
-          name: product.name,
-          quantity: 1,
-          unit_amount: product.price,
-        },
-      ],
+    const { checkoutId, payUrl } = await createDepixCheckout({
+      amount: product.price,
+      description: `${product.name} (${product.slug ?? product.id})`,
+      callbackUrl: webhookUrl,
       redirectUrl: `${site}/checkout/sucesso?ref=${encodeURIComponent(orderId)}`,
-      returnUrl: `${site}/checkout/cancelado`,
-      notificationUrls: [webhookUrl],
-      paymentNotificationUrls: [webhookUrl],
+      metadata: {
+        order_id: orderId,
+        plan_slug: product.slug ?? null,
+        customer_email: input.customerEmail.trim().toLowerCase(),
+      },
     });
 
     const { error: updErr } = await supabase
       .from("orders")
-      .update({ pagbank_checkout_id: checkoutId })
+      .update({ depix_checkout_id: checkoutId })
       .eq("id", orderId);
 
     if (updErr) {
-      console.error("PagBank: pedido criado mas falha ao salvar checkout id", updErr);
+      console.error("DePix: pedido criado mas falha ao salvar checkout id", updErr);
     }
 
     return { payUrl, orderId };

@@ -1,6 +1,6 @@
-# Ngrok + checkout PagBank (desenvolvimento local)
+# Ngrok + checkout DePix (desenvolvimento local)
 
-O **Next.js** roda no seu PC em `http://localhost:3000`. O **PagBank** não aceita essa URL nos campos de redirect e webhook. O **ngrok** cria um endereço **HTTPS na internet** que encaminha tudo para a sua porta 3000 — assim o PagBank “enxerga” um site público.
+O **Next.js** roda no seu PC em `http://localhost:3000`. O **DePix** exige callback HTTPS público para webhook. O **ngrok** cria um endereço **HTTPS na internet** que encaminha tudo para a sua porta 3000 — assim o DePix consegue entregar eventos de pagamento.
 
 ## O que cada coisa faz
 
@@ -8,7 +8,7 @@ O **Next.js** roda no seu PC em `http://localhost:3000`. O **PagBank** não acei
 |------|--------|
 | `npm run dev` | Sobe o site localmente na porta **3000**. |
 | `ngrok http 3000` | Abre um túnel: URL pública `https://xxxx.ngrok-free.app` → seu `localhost:3000`. |
-| `NEXT_PUBLIC_SITE_URL` | Informa ao app qual é essa URL pública (redirects e `/api/webhooks/pagbank`). |
+| `NEXT_PUBLIC_SITE_URL` | Informa ao app qual é essa URL pública (redirect e `/api/webhooks/depix`). |
 
 ---
 
@@ -76,12 +76,12 @@ Salve o arquivo e **reinicie** o `npm run dev` (Ctrl+C no terminal 1 e `npm run 
 
 ## Passo 5 — Testar o fluxo
 
-1. **Não** use só `http://localhost:3000` como “site oficial” do teste com PagBank.
+1. **Não** use só `http://localhost:3000` como “site oficial” do teste com DePix.
 2. No navegador, abra: **`https://SUA-URL-NGROK.ngrok-free.app`** (a mesma do `NEXT_PUBLIC_SITE_URL`).
 3. Se o ngrok mostrar uma página de aviso “Visit Site”, clique para continuar (plano gratuito).
-4. Vá em **Comprar recarga** → checkout → **Ir para o PagBank**.
+4. Vá em **Comprar recarga** → checkout → **Ir para o pagamento PIX**.
 
-Assim, `redirect_url`, `return_url` e as URLs de notificação batem com o que o PagBank espera.
+Assim, `redirect_url` e `callback_url` batem com o que o DePix espera.
 
 ---
 
@@ -96,13 +96,14 @@ Sempre que mudar:
 
 ---
 
-## Sandbox PagBank
+## Sandbox DePix
 
 Continue usando no `.env.local`:
 
 ```env
-PAGBANK_API_BASE_URL=https://sandbox.api.pagseguro.com
-PAGBANK_TOKEN=seu_token_sandbox
+DEPIX_API_BASE_URL=https://depix-backend.vercel.app
+DEPIX_API_KEY=sk_test_sua_chave
+DEPIX_WEBHOOK_SECRET=seu_webhook_secret
 ```
 
 ---
@@ -111,7 +112,7 @@ PAGBANK_TOKEN=seu_token_sandbox
 
 | Sintoma | O que fazer |
 |---------|-------------|
-| PagBank 400 em URLs | Confirme `NEXT_PUBLIC_SITE_URL` **https**, sem `/` no final, igual à URL do ngrok. |
+| DePix rejeita callback | Confirme `NEXT_PUBLIC_SITE_URL` **https**, sem `/` no final, igual à URL do ngrok. |
 | Webhook não chega | Use a URL **ngrok** no navegador; confira se o túnel ainda está ativo no terminal 2. |
 | `ngrok` não encontrado | Instale o CLI e configure o PATH, ou use o caminho completo do executável. |
 

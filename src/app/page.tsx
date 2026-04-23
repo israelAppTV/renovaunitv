@@ -140,7 +140,7 @@ export default async function HomePage() {
             stepNumber: 2,
             title: "Pague com PIX",
             description:
-              "Comprar recarga via PIX é instantâneo. Pagamento processado com segurança pelo PagBank.",
+              "Comprar recarga via PIX é instantâneo. Pagamento processado com segurança.",
           },
           {
             id: "codigo-hora",
@@ -203,7 +203,7 @@ export default async function HomePage() {
             id: "formas-pagamento",
             question: "Quais são as formas de pagamento aceitas?",
             answer:
-              "Você pode comprar recarga UniTV apenas via PIX: confirmação rápida e entrega imediata do código. Todo o processamento é feito com segurança pela plataforma PagBank.",
+              "Você pode comprar recarga UniTV apenas via PIX: confirmação rápida e entrega imediata do código.",
           },
           {
             id: "plano-mensal-anual",
