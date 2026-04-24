@@ -5,9 +5,9 @@
   "/api/admin/session/route": "app/api/admin/session/route.js",
   "/api/checkout/route": "app/api/checkout/route.js",
   "/api/webhooks/depix/route": "app/api/webhooks/depix/route.js",
-  "/checkout/sucesso/page": "app/checkout/sucesso/page.js",
-  "/checkout/cancelado/page": "app/checkout/cancelado/page.js",
   "/checkout/page": "app/checkout/page.js",
-  "/[adminSecret]/codes/page": "app/[adminSecret]/codes/page.js",
-  "/[adminSecret]/page": "app/[adminSecret]/page.js"
+  "/checkout/cancelado/page": "app/checkout/cancelado/page.js",
+  "/checkout/sucesso/page": "app/checkout/sucesso/page.js",
+  "/[adminSecret]/page": "app/[adminSecret]/page.js",
+  "/[adminSecret]/codes/page": "app/[adminSecret]/codes/page.js"
 }
