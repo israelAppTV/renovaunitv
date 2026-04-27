@@ -72,6 +72,12 @@ export function CheckoutForm() {
           <option value="mensal">Recarga Mensal</option>
           <option value="anual">Recarga Anual</option>
         </select>
+        {plan === "anual" && (
+          <p className="mt-2 text-sm text-amber-300">
+            Plano anual temporariamente indisponível. Fale com nosso atendimento para
+            disponibilidade.
+          </p>
+        )}
       </div>
 
       <div>

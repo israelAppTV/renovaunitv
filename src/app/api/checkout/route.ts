@@ -54,6 +54,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
   }
 
+  if (parsed.data.planSlug === "anual") {
+    return NextResponse.json(
+      {
+        error:
+          "Plano anual temporariamente indisponível. Fale com nosso atendimento para disponibilidade.",
+      },
+      { status: 409 }
+    );
+  }
+
   const taxDigits = parsed.data.customer.taxId.replace(/\D/g, "");
   if (taxDigits.length !== 11 && taxDigits.length !== 14) {
     return NextResponse.json({ error: "CPF/CNPJ inválido." }, { status: 400 });
