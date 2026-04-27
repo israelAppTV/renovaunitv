@@ -46,7 +46,11 @@ export async function createCheckoutOrder(
     .insert({
       status: "pending",
       total_amount: product.price,
+      customer_name: input.customerName.trim(),
+      customer_tax_id: input.taxIdDigits,
       customer_email: input.customerEmail.trim().toLowerCase(),
+      customer_phone_area: input.phoneArea,
+      customer_phone_number: input.phoneNumber,
       ip_address: input.clientIp,
     })
     .select("id")
@@ -79,6 +83,7 @@ export async function createCheckoutOrder(
         order_id: orderId,
         plan_slug: product.slug ?? null,
         customer_email: input.customerEmail.trim().toLowerCase(),
+        customer_tax_id: input.taxIdDigits,
       },
     });
 

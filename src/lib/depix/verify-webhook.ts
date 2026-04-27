@@ -22,10 +22,15 @@ function parseDepixSignature(header: string | null): ParsedSignature | null {
 export function verifyDepixWebhookSignature(
   rawBody: string,
   signatureHeader: string | null,
-  secret: string
+  secret: string,
+  toleranceSeconds = 300
 ): boolean {
   const parsed = parseDepixSignature(signatureHeader);
   if (!parsed) return false;
+  const ts = Number(parsed.timestamp);
+  if (!Number.isFinite(ts) || ts <= 0) return false;
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  if (Math.abs(nowSeconds - ts) > toleranceSeconds) return false;
 
   const expected = crypto
     .createHmac("sha256", secret)

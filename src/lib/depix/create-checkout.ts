@@ -15,6 +15,13 @@ export interface CreateDepixCheckoutResult {
   raw: unknown;
 }
 
+export interface DepixCheckoutDetails {
+  id: string;
+  status: string;
+  amount: number;
+  metadata?: Record<string, unknown> | null;
+}
+
 function shouldHomologLog(): boolean {
   return process.env.DEPIX_HOMOLOG_LOGS === "true";
 }
@@ -99,4 +106,45 @@ export async function createDepixCheckout(
   }
 
   return { checkoutId, payUrl, raw: json };
+}
+
+export async function getDepixCheckoutById(
+  checkoutId: string
+): Promise<DepixCheckoutDetails> {
+  const { DEPIX_API_KEY, DEPIX_API_BASE_URL } = getDepixEnv();
+  const res = await fetch(
+    `${DEPIX_API_BASE_URL}/api/checkouts/${encodeURIComponent(checkoutId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${DEPIX_API_KEY}`,
+        Accept: "application/json",
+      },
+    }
+  );
+
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!res.ok) {
+    throw new Error(`DePix consult checkout ${res.status}: ${extractDepixErrorMessage(json)}`);
+  }
+
+  const checkout = json.checkout as Record<string, unknown> | undefined;
+  const id = typeof checkout?.id === "string" ? checkout.id : "";
+  const status = typeof checkout?.status === "string" ? checkout.status : "";
+  const amount = typeof checkout?.amount === "number" ? checkout.amount : NaN;
+  const metadata =
+    checkout?.metadata && typeof checkout.metadata === "object"
+      ? (checkout.metadata as Record<string, unknown>)
+      : null;
+
+  if (!id || !status || !Number.isFinite(amount)) {
+    throw new Error("DePix: resposta de consulta sem campos obrigatórios.");
+  }
+
+  return {
+    id,
+    status,
+    amount,
+    metadata,
+  };
 }

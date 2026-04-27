@@ -1,13 +1,13 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
   "/page": "app/page.js",
-  "/api/admin/codes/import/route": "app/api/admin/codes/import/route.js",
   "/api/admin/session/route": "app/api/admin/session/route.js",
   "/api/checkout/route": "app/api/checkout/route.js",
+  "/api/admin/codes/import/route": "app/api/admin/codes/import/route.js",
   "/api/webhooks/depix/route": "app/api/webhooks/depix/route.js",
   "/checkout/page": "app/checkout/page.js",
   "/checkout/cancelado/page": "app/checkout/cancelado/page.js",
   "/checkout/sucesso/page": "app/checkout/sucesso/page.js",
-  "/[adminSecret]/page": "app/[adminSecret]/page.js",
-  "/[adminSecret]/codes/page": "app/[adminSecret]/codes/page.js"
+  "/[adminSecret]/codes/page": "app/[adminSecret]/codes/page.js",
+  "/[adminSecret]/page": "app/[adminSecret]/page.js"
 }

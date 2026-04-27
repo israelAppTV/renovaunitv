@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerEnv } from "@/lib/env.server";
 import { getDepixEnv } from "@/lib/depix/env";
 import { createCheckoutOrder } from "@/services/checkout/create-checkout-order.service";
+import { evaluatePreCheckoutRisk } from "@/services/checkout/fraud-check.service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ const bodySchema = z.object({
     taxId: z.string().min(11).max(18),
     phoneArea: z.string().min(2).max(3),
     phoneNumber: z.string().min(9).max(11),
+    deviceFingerprint: z.string().max(255).optional(),
   }),
 });
 
@@ -29,6 +31,7 @@ function getClientIp(request: Request): string | null {
 }
 
 export async function POST(request: Request) {
+  const clientIp = getClientIp(request);
   try {
     getServerEnv();
     getDepixEnv();
@@ -74,6 +77,33 @@ export async function POST(request: Request) {
     );
   }
 
+  const risk = await evaluatePreCheckoutRisk({
+    customerName: parsed.data.customer.name,
+    customerEmail: parsed.data.customer.email,
+    taxIdDigits: taxDigits,
+    phoneArea,
+    phoneNumber,
+    clientIp,
+    deviceFingerprint:
+      parsed.data.customer.deviceFingerprint ??
+      request.headers.get("x-device-fingerprint"),
+  });
+  if (risk.blocked) {
+    if (shouldHomologLog()) {
+      console.warn("[homolog][depix] blocked /api/checkout", {
+        flags: risk.flags,
+        reason: risk.reason,
+      });
+    }
+    return NextResponse.json(
+      {
+        error:
+          "Não foi possível iniciar o pagamento agora. Entre em contato com o suporte para validação.",
+      },
+      { status: 429 }
+    );
+  }
+
   try {
     const result = await createCheckoutOrder({
       planSlug: parsed.data.planSlug,
@@ -82,7 +112,7 @@ export async function POST(request: Request) {
       taxIdDigits: taxDigits,
       phoneArea,
       phoneNumber,
-      clientIp: getClientIp(request),
+      clientIp,
     });
     if (shouldHomologLog()) {
       console.info("[homolog][depix] response /api/checkout", {
