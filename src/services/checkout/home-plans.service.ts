@@ -20,14 +20,8 @@ const FEATURES_ANUAL = [
   "Suporte dedicado por 1 ano inteiro",
 ] as const;
 
-function getAnnualWhatsappUrl(): string | null {
-  const raw = process.env.NEXT_PUBLIC_ANNUAL_WHATSAPP_URL?.trim();
-  return raw ? raw : null;
-}
-
 /** Planos exibidos na home a partir do catálogo Supabase (slug mensal / anual). */
 export async function getHomePlans(): Promise<PlanCardData[]> {
-  const annualWhatsappUrl = getAnnualWhatsappUrl();
   let supabase;
   try {
     supabase = createServiceRoleClient();
@@ -72,13 +66,8 @@ export async function getHomePlans(): Promise<PlanCardData[]> {
       ctaLabel:
         slug === "mensal"
           ? "Comprar Recarga Mensal"
-          : annualWhatsappUrl
-            ? "Falar com vendedor no WhatsApp"
-            : "Comprar Recarga Anual",
-      ctaHref:
-        slug === "anual" && annualWhatsappUrl
-          ? annualWhatsappUrl
-          : `/checkout?plan=${slug}`,
+          : "Comprar Recarga Anual",
+      ctaHref: `/checkout?plan=${slug}`,
       detailsLabel:
         slug === "mensal"
           ? "Ver detalhes do Plano Mensal"
@@ -91,7 +80,6 @@ export async function getHomePlans(): Promise<PlanCardData[]> {
 }
 
 function fallbackPlans(): PlanCardData[] {
-  const annualWhatsappUrl = getAnnualWhatsappUrl();
   return [
     {
       id: "mensal",
@@ -112,10 +100,8 @@ function fallbackPlans(): PlanCardData[] {
       priceCents: 17990,
       shortDescription: "Comprar assinatura anual — melhor custo",
       features: [...FEATURES_ANUAL],
-      ctaLabel: annualWhatsappUrl
-        ? "Falar com vendedor no WhatsApp"
-        : "Comprar Recarga Anual",
-      ctaHref: annualWhatsappUrl ?? "/checkout?plan=anual",
+      ctaLabel: "Comprar Recarga Anual",
+      ctaHref: "/checkout?plan=anual",
       detailsLabel: "Ver detalhes do Plano Anual",
       detailsHref: "/#planos",
     },

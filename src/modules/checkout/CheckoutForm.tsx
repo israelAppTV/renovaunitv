@@ -23,6 +23,7 @@ export function CheckoutForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
     setLoading(true);
     try {
       const res = await fetch("/api/checkout", {
@@ -33,9 +34,18 @@ export function CheckoutForm() {
           customer: { name, email, taxId, phoneArea, phoneNumber },
         }),
       });
-      const data = (await res.json()) as { url?: string; error?: string };
+      const data = (await res.json()) as {
+        url?: string;
+        whatsappUrl?: string;
+        annualWhatsapp?: boolean;
+        error?: string;
+      };
       if (!res.ok) {
         setError(data.error ?? "Não foi possível iniciar o pagamento.");
+        return;
+      }
+      if (data.annualWhatsapp && data.whatsappUrl) {
+        window.open(data.whatsappUrl, "_blank", "noopener,noreferrer");
         return;
       }
       if (data.url) {
@@ -74,8 +84,8 @@ export function CheckoutForm() {
         </select>
         {plan === "anual" && (
           <p className="mt-2 text-sm text-amber-300">
-            Plano anual temporariamente indisponível. Fale com nosso atendimento para
-            disponibilidade.
+            Ao clicar em comprar, vamos abrir o WhatsApp com seus dados para
+            atendimento e fechamento do pedido anual.
           </p>
         )}
       </div>
@@ -184,7 +194,11 @@ export function CheckoutForm() {
         disabled={loading}
         className="w-full rounded-xl bg-gradient-to-r from-primary to-accent py-3.5 font-semibold text-white shadow-lg transition hover:opacity-90 disabled:opacity-50"
       >
-        {loading ? "Redirecionando…" : "Ir para o pagamento PIX"}
+        {loading
+          ? "Redirecionando…"
+          : plan === "anual"
+            ? "Enviar pedido anual no WhatsApp"
+            : "Ir para o pagamento PIX"}
       </button>
 
       <p className="text-center text-xs text-text/60">

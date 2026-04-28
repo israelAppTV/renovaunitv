@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerEnv } from "@/lib/env.server";
 import { getDepixEnv } from "@/lib/depix/env";
 import { createCheckoutOrder } from "@/services/checkout/create-checkout-order.service";
+import { createAnnualWhatsappLead } from "@/services/checkout/create-annual-whatsapp-lead.service";
 import { evaluatePreCheckoutRisk } from "@/services/checkout/fraud-check.service";
 
 export const runtime = "nodejs";
@@ -52,16 +53,6 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
-  }
-
-  if (parsed.data.planSlug === "anual") {
-    return NextResponse.json(
-      {
-        error:
-          "Plano anual temporariamente indisponível. Fale com nosso atendimento para disponibilidade.",
-      },
-      { status: 409 }
-    );
   }
 
   const taxDigits = parsed.data.customer.taxId.replace(/\D/g, "");
@@ -115,6 +106,34 @@ export async function POST(request: Request) {
   }
 
   try {
+    if (parsed.data.planSlug === "anual") {
+      const annualLead = await createAnnualWhatsappLead({
+        customerName: parsed.data.customer.name,
+        customerEmail: parsed.data.customer.email,
+        taxIdDigits: taxDigits,
+        phoneArea,
+        phoneNumber,
+        clientIp,
+        userAgent: request.headers.get("user-agent"),
+        deviceFingerprint:
+          parsed.data.customer.deviceFingerprint ??
+          request.headers.get("x-device-fingerprint"),
+      });
+
+      if (shouldHomologLog()) {
+        console.info("[homolog][depix] response /api/checkout annual_whatsapp", {
+          ok: true,
+          leadId: annualLead.leadId,
+        });
+      }
+
+      return NextResponse.json({
+        annualWhatsapp: true,
+        leadId: annualLead.leadId,
+        whatsappUrl: annualLead.whatsappUrl,
+      });
+    }
+
     const result = await createCheckoutOrder({
       planSlug: parsed.data.planSlug,
       customerName: parsed.data.customer.name,

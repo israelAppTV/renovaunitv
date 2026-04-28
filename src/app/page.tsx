@@ -10,6 +10,9 @@ import { getHomePlans } from "@/services/checkout/home-plans.service";
 
 export default async function HomePage() {
   const plans = await getHomePlans();
+  const supportWhatsappUrl =
+    process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_URL?.trim() ||
+    "https://wa.me/5562998060804";
 
   return (
     <div className="space-y-12 py-8">
@@ -83,7 +86,7 @@ export default async function HomePage() {
             id: "celular",
             title: "Celular Android",
             subtitle: "Link de download pelo WhatsApp",
-            externalHref: "https://wa.me/5562998060804",
+            externalHref: supportWhatsappUrl,
           },
         ]}
       />
