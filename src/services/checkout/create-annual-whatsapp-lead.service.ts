@@ -2,6 +2,7 @@ import "server-only";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 const DEFAULT_SUPPORT_PHONE = "5562998060804";
+type PlanSlug = "mensal" | "anual";
 
 function extractWhatsappPhone(rawUrl: string | undefined): string {
   const source = (rawUrl ?? "").trim();
@@ -14,14 +15,16 @@ function extractWhatsappPhone(rawUrl: string | undefined): string {
 }
 
 function buildMessage(input: {
+  planSlug: PlanSlug;
   customerName: string;
   customerEmail: string;
   taxIdDigits: string;
   phoneArea: string;
   phoneNumber: string;
 }): string {
+  const planLabel = input.planSlug === "anual" ? "anual" : "mensal";
   return [
-    "Olá! Quero comprar o plano anual.",
+    `Vim pelo site e gostaria de comprar o plano ${planLabel}.`,
     "",
     "Dados do cliente:",
     `Nome: ${input.customerName.trim()}`,
@@ -32,6 +35,7 @@ function buildMessage(input: {
 }
 
 export interface CreateAnnualWhatsappLeadInput {
+  planSlug: PlanSlug;
   customerName: string;
   customerEmail: string;
   taxIdDigits: string;
@@ -42,14 +46,14 @@ export interface CreateAnnualWhatsappLeadInput {
   deviceFingerprint: string | null;
 }
 
-export interface CreateAnnualWhatsappLeadResult {
+export interface CreateWhatsappLeadResult {
   leadId: string;
   whatsappUrl: string;
 }
 
-export async function createAnnualWhatsappLead(
+export async function createWhatsappLead(
   input: CreateAnnualWhatsappLeadInput
-): Promise<CreateAnnualWhatsappLeadResult> {
+): Promise<CreateWhatsappLeadResult> {
   const phone = extractWhatsappPhone(process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_URL);
   const messageText = buildMessage(input);
   const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`;
@@ -58,7 +62,7 @@ export async function createAnnualWhatsappLead(
   const { data, error } = await supabase
     .from("annual_whatsapp_leads")
     .insert({
-      plan_slug: "anual",
+      plan_slug: input.planSlug,
       customer_name: input.customerName.trim(),
       customer_email: input.customerEmail.trim().toLowerCase(),
       customer_tax_id: input.taxIdDigits,
@@ -74,7 +78,7 @@ export async function createAnnualWhatsappLead(
     .single();
 
   if (error || !data?.id) {
-    throw new Error("Não foi possível registrar seu pedido anual no momento.");
+    throw new Error("Não foi possível registrar seu pedido no WhatsApp no momento.");
   }
 
   return { leadId: data.id, whatsappUrl };

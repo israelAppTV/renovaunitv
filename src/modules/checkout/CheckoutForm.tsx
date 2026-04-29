@@ -4,6 +4,27 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 type Plan = "mensal" | "anual";
+type PaymentChannel = "site" | "whatsapp";
+
+function isFormValid(input: {
+  name: string;
+  email: string;
+  taxId: string;
+  phoneArea: string;
+  phoneNumber: string;
+}): boolean {
+  const taxDigits = input.taxId.replace(/\D/g, "");
+  const areaDigits = input.phoneArea.replace(/\D/g, "").slice(0, 2);
+  const numberDigits = input.phoneNumber.replace(/\D/g, "").slice(0, 9);
+
+  if (input.name.trim().length < 3) return false;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim().toLowerCase())) return false;
+  if (taxDigits.length !== 11 && taxDigits.length !== 14) return false;
+  if (areaDigits.length !== 2) return false;
+  if (numberDigits.length !== 9 || !numberDigits.startsWith("9")) return false;
+
+  return true;
+}
 
 export function CheckoutForm() {
   const router = useRouter();
@@ -19,10 +40,22 @@ export function CheckoutForm() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showNotice, setShowNotice] = useState(true);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const canProceed = isFormValid({ name, email, taxId, phoneArea, phoneNumber });
+
+  async function submitByChannel(channel: PaymentChannel) {
     setError(null);
+
+    if (!canProceed) {
+      setError("Preencha corretamente todos os dados para continuar.");
+      return;
+    }
+
+    if (plan === "anual" && channel === "site") {
+      setError("Plano anual é vendido apenas pelo WhatsApp.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -31,20 +64,21 @@ export function CheckoutForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planSlug: plan,
+          paymentChannel: channel,
           customer: { name, email, taxId, phoneArea, phoneNumber },
         }),
       });
       const data = (await res.json()) as {
         url?: string;
         whatsappUrl?: string;
-        annualWhatsapp?: boolean;
+        viaWhatsapp?: boolean;
         error?: string;
       };
       if (!res.ok) {
         setError(data.error ?? "Não foi possível iniciar o pagamento.");
         return;
       }
-      if (data.annualWhatsapp && data.whatsappUrl) {
+      if (data.viaWhatsapp && data.whatsappUrl) {
         window.open(data.whatsappUrl, "_blank", "noopener,noreferrer");
         return;
       }
@@ -61,14 +95,31 @@ export function CheckoutForm() {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mx-auto max-w-lg space-y-6 rounded-xl border border-primary/20 bg-card p-6 shadow-lg sm:p-8"
-    >
+    <>
+      {showNotice && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl border border-primary/30 bg-card p-5 shadow-xl">
+            <h2 className="text-lg font-bold text-text">Aviso importante</h2>
+            <p className="mt-2 text-sm text-text/80">
+              Se pagar pelo site, o código do plano mensal é enviado em até 24 horas.
+              Para receber mais rápido, escolha o pagamento via WhatsApp.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowNotice(false)}
+              className="mt-4 w-full rounded-lg bg-gradient-to-r from-primary to-accent py-2.5 font-semibold text-white"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
+
+      <form className="mx-auto max-w-lg space-y-6 rounded-xl border border-primary/20 bg-card p-6 shadow-lg sm:p-8">
       <div>
         <h1 className="text-2xl font-bold text-text">Finalizar compra</h1>
         <p className="mt-1 text-sm text-text/70">
-          Informe seus dados para pagamento seguro via PIX.
+          Informe seus dados para pagamento pelo site ou WhatsApp.
         </p>
       </div>
 
@@ -84,8 +135,7 @@ export function CheckoutForm() {
         </select>
         {plan === "anual" && (
           <p className="mt-2 text-sm text-amber-300">
-            Ao clicar em comprar, vamos abrir o WhatsApp com seus dados para
-            atendimento e fechamento do pedido anual.
+            O plano anual é vendido apenas no WhatsApp.
           </p>
         )}
       </div>
@@ -189,17 +239,24 @@ export function CheckoutForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full rounded-xl bg-gradient-to-r from-primary to-accent py-3.5 font-semibold text-white shadow-lg transition hover:opacity-90 disabled:opacity-50"
-      >
-        {loading
-          ? "Redirecionando…"
-          : plan === "anual"
-            ? "Enviar pedido anual no WhatsApp"
-            : "Ir para o pagamento PIX"}
-      </button>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          disabled={loading || !canProceed || plan === "anual"}
+          onClick={() => submitByChannel("site")}
+          className="w-full rounded-xl border border-primary/40 bg-primary/10 py-3.5 font-semibold text-text transition hover:border-primary hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading ? "Processando..." : "Pagamento pelo site"}
+        </button>
+        <button
+          type="button"
+          disabled={loading || !canProceed}
+          onClick={() => submitByChannel("whatsapp")}
+          className="w-full rounded-xl bg-gradient-to-r from-primary to-accent py-3.5 font-semibold text-white shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading ? "Processando..." : "Pagamento pelo WhatsApp"}
+        </button>
+      </div>
 
       <p className="text-center text-xs text-text/60">
         <button
@@ -210,6 +267,7 @@ export function CheckoutForm() {
           Voltar ao site
         </button>
       </p>
-    </form>
+      </form>
+    </>
   );
 }

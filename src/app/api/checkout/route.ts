@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getServerEnv } from "@/lib/env.server";
 import { getDepixEnv } from "@/lib/depix/env";
 import { createCheckoutOrder } from "@/services/checkout/create-checkout-order.service";
-import { createAnnualWhatsappLead } from "@/services/checkout/create-annual-whatsapp-lead.service";
+import { createWhatsappLead } from "@/services/checkout/create-annual-whatsapp-lead.service";
 import { evaluatePreCheckoutRisk } from "@/services/checkout/fraud-check.service";
 
 export const runtime = "nodejs";
@@ -15,6 +15,7 @@ function shouldHomologLog(): boolean {
 
 const bodySchema = z.object({
   planSlug: z.enum(["mensal", "anual"]),
+  paymentChannel: z.enum(["site", "whatsapp"]),
   customer: z.object({
     name: z.string().min(3).max(200),
     email: z.string().email(),
@@ -106,8 +107,22 @@ export async function POST(request: Request) {
   }
 
   try {
-    if (parsed.data.planSlug === "anual") {
-      const annualLead = await createAnnualWhatsappLead({
+    if (
+      parsed.data.planSlug === "anual" ||
+      parsed.data.paymentChannel === "whatsapp"
+    ) {
+      if (
+        parsed.data.planSlug === "anual" &&
+        parsed.data.paymentChannel === "site"
+      ) {
+        return NextResponse.json(
+          { error: "Plano anual é vendido apenas pelo WhatsApp." },
+          { status: 409 }
+        );
+      }
+
+      const whatsappLead = await createWhatsappLead({
+        planSlug: parsed.data.planSlug,
         customerName: parsed.data.customer.name,
         customerEmail: parsed.data.customer.email,
         taxIdDigits: taxDigits,
@@ -121,16 +136,17 @@ export async function POST(request: Request) {
       });
 
       if (shouldHomologLog()) {
-        console.info("[homolog][depix] response /api/checkout annual_whatsapp", {
+        console.info("[homolog][depix] response /api/checkout whatsapp", {
           ok: true,
-          leadId: annualLead.leadId,
+          leadId: whatsappLead.leadId,
+          plan: parsed.data.planSlug,
         });
       }
 
       return NextResponse.json({
-        annualWhatsapp: true,
-        leadId: annualLead.leadId,
-        whatsappUrl: annualLead.whatsappUrl,
+        viaWhatsapp: true,
+        leadId: whatsappLead.leadId,
+        whatsappUrl: whatsappLead.whatsappUrl,
       });
     }
 
