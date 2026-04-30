@@ -3,6 +3,7 @@ import Script from "next/script";
 import "@/app/globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { FloatingWhatsAppButton } from "@/components/FloatingWhatsAppButton";
 import { Container } from "@/components/layout/Container";
 import { Providers } from "@/components/Providers";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
             <Container>{children}</Container>
           </main>
           <Footer />
+          <FloatingWhatsAppButton />
         </Providers>
       </body>
     </html>
