@@ -1,5 +1,6 @@
 import { CtaCardSection } from "@/components/CtaCardSection";
 import { FaqSection } from "@/components/FaqSection";
+import { resolveWhatsappHref } from "@/components/FloatingWhatsAppButton";
 import { Hero } from "@/components/Hero";
 import { HowToSection } from "@/components/HowToSection";
 import { InstallTutorialsSection } from "@/components/InstallTutorialsSection";
@@ -13,6 +14,7 @@ export default async function HomePage() {
   const supportWhatsappUrl =
     process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_URL?.trim() ||
     "https://wa.me/5562998060804";
+  const heroWhatsappUrl = resolveWhatsappHref();
 
   return (
     <div className="space-y-12 py-8">
@@ -45,6 +47,8 @@ export default async function HomePage() {
         ctaHref="/checkout?plan=mensal"
         secondaryCtaLabel="Download e Instalação"
         secondaryCtaHref="/#planos"
+        whatsappCtaLabel="Tire suas dúvidas pelo WhatsApp"
+        whatsappCtaHref={heroWhatsappUrl}
         imageSrc="/images/hero-app.webp"
         imageAlt="Prévia do app e compatibilidade em dispositivos"
         imageCardTitle="Prévia do app"
